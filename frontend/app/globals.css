@@ -1,0 +1,387 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sky: var(--sky);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-ink: var(--ink);
+  --color-dim: var(--dim);
+  --color-runway: var(--runway);
+  --color-beacon: var(--beacon);
+  --color-paint: var(--paint);
+  --color-hold: var(--hold);
+  --color-tarmac: var(--tarmac);
+
+  --font-sans: var(--font-barlow);
+  --font-display: var(--font-barlow-condensed);
+  /* taste-skill-ignore: code and real command output only */
+  --font-mono: var(--font-overpass-mono); /* taste-skill-ignore */
+  --font-heading: var(--font-barlow-condensed);
+
+  /* One corner radius everywhere. */
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* The painted signs of an airfield, seen at night. */
+  --sky: #141619;
+  --panel: #1e2125;
+  --raised: #2a2e33;
+  --ink: #f4f5f6;
+  --dim: #b0b6bd;
+  --line: #3a3f46;
+  --tarmac: #000000;
+  --paint: #ffffff;
+  --runway: #ffc417;
+  --hold: #c8102e;
+  --beacon: #ff6b62;
+  --ring-line: #5a5128;
+
+  --background: var(--sky);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--runway);
+  --primary-foreground: var(--tarmac);
+  --secondary: var(--raised);
+  --secondary-foreground: var(--ink);
+  --muted: var(--raised);
+  --muted-foreground: var(--dim);
+  --accent: var(--raised);
+  --accent-foreground: var(--ink);
+  --destructive: var(--beacon);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--runway);
+  --radius: 3px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid var(--runway);
+    outline-offset: 2px;
+  }
+}
+
+/* Display type reads like the lettering on a sign. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+}
+
+/* Red means hold, yellow means look out, black with a yellow edge means you're clear. */
+.sign {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.12em 0.45em;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sign[data-kind="hold"] {
+  background: var(--hold);
+  color: var(--paint);
+}
+
+.sign[data-kind="traffic"] {
+  background: var(--runway);
+  color: var(--tarmac);
+}
+
+.sign[data-kind="cleared"] {
+  background: var(--tarmac);
+  border-color: var(--runway);
+  color: var(--runway);
+}
+
+.sign[data-kind="plain"] {
+  background: var(--raised);
+  color: var(--ink);
+}
+
+/* A field painted like one of the signs, for Roger's dialog and the conflict page. */
+.field[data-kind="hold"] {
+  --field-action: var(--paint);
+  background: var(--hold);
+  color: var(--paint);
+}
+
+.field[data-kind="traffic"] {
+  --field-action: var(--tarmac);
+  background: var(--runway);
+  color: var(--tarmac);
+}
+
+.field[data-kind="cleared"] {
+  --field-action: var(--runway);
+  background: var(--tarmac);
+  border-color: var(--runway);
+  color: var(--paint);
+}
+
+/* The radar fills the room it's given, whichever side of that room is shorter. */
+.scope-room > * {
+  width: min(100%, 38svh);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .scope-room {
+    display: grid;
+    width: 100%;
+    flex: 1;
+    place-items: center;
+    min-height: 0;
+    container-type: size;
+  }
+  .scope-room > * {
+    width: min(100cqw, 100cqh);
+  }
+}
+
+.taxi-lights {
+  animation: taxi-lights 1.4s steps(7) infinite;
+}
+
+.taxi-lights[data-paused="true"] {
+  animation-play-state: paused;
+}
+
+.alarm {
+  animation: alert 1s steps(2, jump-none) infinite;
+}
+
+.shaken[data-mood="collision"] .scope-room > * {
+  animation: shake 0.5s ease-out;
+}
+
+.rise {
+  --rise-start: 0%;
+}
+
+.rise-2 {
+  --rise-start: 8%;
+}
+
+.rise-3 {
+  --rise-start: 16%;
+}
+
+/* Entrances run off the scroll itself and only move things, so nothing is ever hidden. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rise,
+    .rise-2,
+    .rise-3 {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry var(--rise-start) entry calc(var(--rise-start) + 45%);
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(48px);
+  }
+}
+
+@keyframes taxi-lights {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+@keyframes alert {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes shake {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taxi-lights,
+  .alarm,
+  .shaken[data-mood="collision"] .scope-room > * {
+    animation: none;
+  }
+}
+
+/* The hero is one airfield sign: yellow panel, black panel, yellow panel. */
+.sign-array {
+  position: relative;
+  display: grid;
+  flex: 1;
+  gap: 1.25rem;
+  padding: 0.5rem 1rem 2rem;
+}
+
+.sign-title {
+  font-size: 12.4vw;
+}
+
+.sign-title > span {
+  display: block;
+}
+
+.location {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  background: var(--tarmac);
+  color: var(--paint);
+  outline: 4px solid var(--runway);
+  outline-offset: -0.75rem;
+}
+
+@media (min-width: 640px) {
+  .sign-array {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sign-array {
+    --frame: min(43vw, calc(100svh - 8rem));
+    grid-template-columns: minmax(0, 1fr) var(--frame) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: 2rem;
+    padding: 0 2rem 2rem;
+  }
+  .sign-title {
+    grid-row: 1;
+    grid-column: 1;
+    font-size: clamp(3.5rem, 5.4vw, 7rem);
+  }
+  /* The second half sits across the black panel, on the far yellow side of the sign. */
+  .sign-title > :last-child {
+    position: absolute;
+    top: 0;
+    right: 2rem;
+    width: calc((100% - var(--frame)) / 2 - 4rem);
+    text-align: right;
+  }
+  .sign-array > .location {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+  }
+  .sign-array > .note-left {
+    grid-row: 2;
+    grid-column: 1;
+    align-self: end;
+  }
+  .sign-array > .note-right {
+    grid-row: 2;
+    grid-column: 3;
+    align-self: end;
+    text-align: right;
+  }
+}
+
+/* The range input draws no fill of its own, and the part already passed sits underneath it. */
+.stage-range {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 2rem;
+  margin: 0;
+  appearance: none;
+  background: none;
+  cursor: pointer;
+}
+
+.stage-range::-webkit-slider-runnable-track {
+  height: 2rem;
+  background: none;
+}
+
+.stage-range::-moz-range-track {
+  height: 0.5rem;
+  background: var(--raised);
+}
+
+.stage-range::-webkit-slider-thumb {
+  width: 2rem;
+  height: 2rem;
+  appearance: none;
+  border-radius: var(--radius);
+  background: var(--runway);
+}
+
+.stage-range::-moz-range-thumb {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--runway);
+}
