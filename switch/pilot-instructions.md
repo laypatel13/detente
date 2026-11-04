@@ -13,4 +13,4 @@ Before you edit any file:
 2. Edit only the files your clearance lists. To widen it, file a new plan.
 3. On HOLD, stop editing and wait. If Detente opens a conflict room, go there, explain your change in 3 lines, and propose at most two fixes.
 4. Never resolve a conflict yourself. A person picks.
-5. When you finish, post LANDED with the files you changed.
+5. When you finish editing, post LANDED with the files you changed. Don't wait to be asked. Landing isn't pushing.

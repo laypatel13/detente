@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 
 from backend.airspace import FACES, Airspace
-from backend.detector import Collision, Report, check_code, check_plan, check_violations
+from backend.detector import MAIN, Collision, Report, check_code, check_plan, check_violations
 from backend.plans import PlanError, parse_landed, parse_plan
 from backend.switch import Event, RoomLink, Switch, SwitchError
 
@@ -31,6 +31,11 @@ BOARD = "Airspace"
 def _option(conflict: dict) -> dict:
     """The fix a person picked."""
     return next(item for item in conflict["options"] if item["key"] == conflict["decision"]["option"])
+
+
+def _pilots(conflict: dict) -> tuple[str, ...]:
+    """The agents in a collision. A change nobody here made has only main behind it."""
+    return tuple(name for name in (conflict["changed_by"], conflict["caller"]) if name != MAIN)
 
 
 class Tower:
@@ -188,7 +193,7 @@ class Tower:
         self.airspace.drop_report(callsign)
         await self._say(self.room, TOWER_ROOM, "LANDED", f"{callsign}, by {sender}.")
         await self._sync_conflicts(
-            check_code(self.airspace.reports()),
+            self._collisions(),
             f"{callsign} was landed without a fix, so check this before merging",
         )
         await self._update_board()
@@ -210,12 +215,24 @@ class Tower:
         async with self._lock:
             self.airspace.save_report(callsign, report)
             self._add_crew(callsign, person, vendor)
+            self._credit(callsign, report)
             try:
                 await self._post_violations(callsign, report)
-                await self._sync_conflicts(check_code(self.airspace.reports()))
+                await self._sync_conflicts(self._collisions())
             except FAILURES:
                 # The report is saved, so the next squawk retries this.
                 log.exception("Couldn't reach Switch while handling %s's squawk", callsign)
+
+    def _credit(self, callsign: str, report: Report) -> None:
+        """Remember who changed each function, so a push that breaks someone names its author."""
+        authors = self.airspace.get("authors", {})
+        pushed = report.get("pushed") or {"changes": []}
+        credited = {change["symbol"]: callsign for change in [*report["changes"], *pushed["changes"]]}
+        if credited.items() - authors.items():
+            self.airspace.put("authors", {**authors, **credited})
+
+    def _collisions(self) -> list[Collision]:
+        return check_code(self.airspace.reports(), self.airspace.get("authors", {}))
 
     def _add_crew(self, callsign: str, person: str, vendor: str) -> None:
         crew = self.airspace.get("crew", [])
@@ -263,7 +280,7 @@ class Tower:
 
     async def _open_conflict(self, collision: Collision) -> None:
         conflict_id = self.airspace.new_conflict_id(collision)
-        pilots = (collision["changed_by"], collision["caller"])
+        pilots = _pilots(collision)
         people = list(dict.fromkeys(person for person in map(self._person, pilots) if person))
         room = await self.room.call(
             "create_room",
@@ -307,7 +324,14 @@ class Tower:
                 f"{collision['changed_by']} removed {collision['symbol']}\n"
                 f"{collision['caller']}'s {breaks['file']}:{breaks['line']} {collision['reason']}"
             )
-        return f"{what}\nNothing pushed. Both flights holding.\nOpened {conflict_id}."
+        if collision.get("commit"):
+            held = (
+                f"Already on main in {collision['commit']}. "
+                f"{collision['caller']} holding: don't push until it's fixed."
+            )
+        else:
+            held = "Nothing pushed. Both flights holding."
+        return f"{what}\n{held}\nOpened {conflict_id}."
 
     def _decision_card(self, collision: Collision, people: list[str]) -> str:
         names = " or ".join(people) or "A person"
@@ -351,7 +375,7 @@ class Tower:
         # it was picked for, it undoes it, and the collision opens again.
         fix_file = option.get("file") or conflict["breaks"]["file"]
         self.airspace.clear_for_fix(option["agent"], fix_file, f"Fix for {conflict['id']}")
-        pilots = (conflict["changed_by"], conflict["caller"])
+        pilots = _pilots(conflict)
         await self._say(
             link,
             conflict["id"],

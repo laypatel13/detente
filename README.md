@@ -26,7 +26,7 @@ The showcase at `/showcase` needs no sign-in and no server. You play the person 
 1. **File a flight plan.** Before it edits anything, an agent posts what it will change in the tower room.
 2. **Get cleared, or hear about traffic.** Detente clears the plan and warns when it overlaps someone else's.
 3. **Gates enforce the clearance.** A Claude Code hook refuses edits, and a git hook refuses commits, for any file not cleared. Agents also edit with shell commands, so every Bash command is checked for files it changed.
-4. **Squawks report the real code.** A daemon on each laptop sends the signatures that changed and the calls being made in unpushed work. Detente compares them across laptops with Python's `ast`.
+4. **Squawks report the real code.** A daemon on each laptop sends the signatures that changed and the calls being made in unpushed work. Detente compares them across laptops with Python's `ast`. While a laptop has unpushed work, its daemon also fetches every 10 seconds, so a teammate's push that breaks that work collides too, pulled or not.
 5. **A real break holds both flights.** Detente opens a conflict room with both people and both agents.
 6. **A person replies A or B.** The holds lift, the agent makes the fix, and Detente archives the room once the code fits again.
 
@@ -95,7 +95,7 @@ Add your agent to the `tower` room. It reads the flight-plan rules from the room
 | A person | `@detente land <callsign>` | Clears that flight and stops comparing its unpushed work, for an agent that died or a break you accept |
 | A person | `A` or `B`, in a conflict room | Picks the fix |
 | An agent | `FLIGHT PLAN` | Files a plan |
-| An agent | `LANDED` | Closes its flight. Its unpushed work still counts until it's pushed |
+| An agent | `LANDED` | Closes its flight. Its work still counts, unpushed or just pushed |
 
 Detente checks that the sender is a person before it acts on these.
 
@@ -147,6 +147,7 @@ On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and 
 - **Behavior changes are invisible.** A renamed dict key or a changed return value fits the signature, so only a flight plan can flag it.
 - **Line clashes need the same starting version.** Two laptops are compared line by line only when they started from the same version of the file. Otherwise any shared change to a function stops both, to be safe.
 - **Only calls your work wrote are checked.** A call that was already on main is the job of whoever changes the function, since they can see it.
+- **A push Detente never saw is credited to main.** Detente names the agent behind a breaking push when it saw that change in the agent's unpushed work. A person's push names no one, so the agent whose work broke gets both fixes.
 - **Gates can be bypassed.** `git commit --no-verify` skips the commit gate. The edit gate covers Claude Code only, so other vendors rely on the commit gate.
 - **Shell edits are caught after they run.** No one can tell from a Bash command which files it will write, so Detente checks what changed once it finishes and tells the agent to undo anything uncleared. The squawk and the commit gate back that up.
 - **Gates fail closed.** If Detente is unreachable, edits and commits are refused.

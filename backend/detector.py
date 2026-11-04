@@ -10,6 +10,9 @@ from backend.plans import FlightPlan, same_symbol
 Report = dict[str, Any]
 Collision = dict[str, Any]
 
+# Who changed a function Detente never saw in anyone's unpushed work, like a person's push.
+MAIN = "main"
+
 
 @dataclass(frozen=True)
 class Traffic:
@@ -62,8 +65,13 @@ def _first_option(name: str, reason: str) -> str:
     return f"Accept the old call to {name}"
 
 
-def _contract_collision(change: dict, changer: str, caller: str, call: Any, reason: str) -> Collision:
+def _contract_collision(
+    change: dict, changer: str, caller: str, call: Any, reason: str, commit: str | None = None
+) -> Collision:
     name = _short(change["symbol"])
+    fix = _first_option(name, reason)
+    update = "Pull main and update" if commit else "Update"
+    # The key leaves out whether it's pushed, so a push mid-conflict keeps the same room.
     return {
         "key": f"{change['symbol']}|{changer}|{caller}|{call.file}",
         "kind": "contract",
@@ -75,11 +83,18 @@ def _contract_collision(change: dict, changer: str, caller: str, call: Any, reas
         "caller": caller,
         "breaks": {"file": call.file, "line": call.line, "code": call.code},
         "reason": reason,
+        "commit": commit,
         "options": [
-            {"key": "A", "text": _first_option(name, reason), "agent": changer, "file": change["file"]},
+            {
+                "key": "A",
+                "text": f"{fix} on main" if commit else fix,
+                # Nobody here made a change that came from main, so the caller takes it.
+                "agent": caller if changer == MAIN else changer,
+                "file": change["file"],
+            },
             {
                 "key": "B",
-                "text": f"Update the {call.kind} at {call.file}:{call.line}",
+                "text": f"{update} the {call.kind} at {call.file}:{call.line}",
                 "agent": caller,
                 "file": call.file,
             },
@@ -212,27 +227,53 @@ def _pair_collisions(left: str, right: str, mine: Report, theirs: Report) -> lis
     return found
 
 
-def check_code(reports: dict[str, Report]) -> list[Collision]:
-    """Layer 2, code against code, across every laptop's unpushed work."""
+def _broken_calls(
+    change: dict, changer: str, caller: str, calls: list, commit: str | None = None
+) -> list[Collision]:
+    if not change["before"] or change["before"] == change["after"]:
+        return []
+    before = signature_from(change["before"])
+    after = signature_from(change["after"])
+    found = []
+    for raw in calls:
+        call = call_from(raw)
+        if call.symbol == change["symbol"] and (reason := problem(after, call, before)):
+            found.append(_contract_collision(change, changer, caller, call, reason, commit))
+    return found
+
+
+def check_code(reports: dict[str, Report], authors: dict[str, str] | None = None) -> list[Collision]:
+    """Layer 2, code against code, across every laptop's unpushed work and what main
+    changed under it. authors says who made each change, for the changes main brought."""
     found: dict[str, Collision] = {}
+    authors = authors or {}
+
+    def edits(report: Report) -> set[str]:
+        return {change["symbol"] for change in report["changes"]}
 
     for changer, report in reports.items():
-        for change in report["changes"]:
-            if not change["before"] or change["before"] == change["after"]:
-                continue
-            before = signature_from(change["before"])
-            after = signature_from(change["after"])
+        # Work pushed seconds ago still counts until teammates' daemons fetch it.
+        pushed = report.get("pushed") or {"commit": None, "changes": []}
+        recent = [(change, None) for change in report["changes"]] + [
+            (change, pushed["commit"])
+            for change in pushed["changes"]
+            if change["symbol"] not in edits(report)
+        ]
+        for change, commit in recent:
             for caller, theirs in reports.items():
-                if caller == changer:
-                    continue
-                for raw in theirs["calls"]:
-                    call = call_from(raw)
-                    if call.symbol != change["symbol"]:
-                        continue
-                    reason = problem(after, call, before)
-                    if reason:
-                        collision = _contract_collision(change, changer, caller, call, reason)
+                if caller != changer:
+                    for collision in _broken_calls(change, changer, caller, theirs["calls"], commit):
                         found.setdefault(collision["key"], collision)
+
+    for caller, report in reports.items():
+        upstream = report.get("upstream") or {"commit": None, "changes": []}
+        for change in upstream["changes"]:
+            changer = authors.get(change["symbol"], MAIN)
+            # The author's newer unpushed edit is what main gets next, and it's checked above.
+            if changer == caller or change["symbol"] in edits(reports.get(changer, {"changes": []})):
+                continue
+            for collision in _broken_calls(change, changer, caller, report["calls"], upstream["commit"]):
+                found.setdefault(collision["key"], collision)
 
     callsigns = sorted(reports)
     for index, left in enumerate(callsigns):

@@ -231,6 +231,46 @@ def test_a_person_can_land_a_dead_agents_flight(tower):
     assert tower.airspace.plans() == {}
 
 
+PUSHED = {"files": [], "changes": [], "calls": [], "pushed": {"commit": "5ce0143", "changes": CHANGED}}
+NOTHING = {"files": [], "changes": [], "calls": []}
+
+
+def stale(source: str) -> dict:
+    """Work written against main from before someone's push."""
+    return {**caller(source), "upstream": {"commit": "5ce0143", "changes": CHANGED}}
+
+
+def test_pushing_mid_conflict_keeps_the_conflict(tower):
+    collide(tower)
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", PUSHED))
+    # The caller's daemon fetches the push, then the pusher's stops reporting it.
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", stale(BROKEN)))
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", NOTHING))
+    assert len(tower.airspace.conflicts("open")) == 1
+    assert "RESOLVED" not in said()
+
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", stale(FIXED)))
+    assert tower.airspace.conflicts("open", "decided") == []
+
+
+def test_a_push_breaking_work_names_its_author(tower):
+    message(tower, "lay-claude", PLAN_A)
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", NOTHING))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", stale(BROKEN)))
+    [conflict] = tower.airspace.conflicts("open")
+    assert conflict["changed_by"] == "lay-claude"
+    assert "Already on main in 5ce0143. a-codex holding" in said()
+
+
+def test_a_push_detente_never_saw_brings_in_only_the_caller(tower):
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", stale(BROKEN)))
+    [conflict] = tower.airspace.conflicts("open")
+    assert conflict["changed_by"] == "main"
+    assert called("create_room")[0]["agent_names"] == ["detente", "a-codex"]
+    assert "main changed create_session(user) to create_session(user, ttl)" in said()
+
+
 def test_landing_takes_a_mention_as_the_callsign(tower):
     # Mattermost's autocomplete writes the agent's name as a mention.
     message(tower, "lay-claude", PLAN_A)

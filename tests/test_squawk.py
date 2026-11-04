@@ -1,10 +1,19 @@
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
 
 from backend.detector import check_code
-from pilot.squawk import Reporter, base_commit, changed_files
+from pilot.squawk import (
+    PUSHED_SHOWN_SECONDS,
+    Reporter,
+    base_commit,
+    changed_files,
+    fetch,
+    recent_pushes,
+    upstream_commit,
+)
 
 
 def git(root: Path, *args: str) -> None:
@@ -69,3 +78,108 @@ def test_a_file_that_isnt_utf8_doesnt_stop_the_daemon(checkouts):
     left, _ = checkouts
     (left / "settings.toml").write_bytes(b'ttl = 3600\ncookie = "s\xe9"\n\n\ncurrency = "USD"\n')
     assert report(left)["hunks"]["settings.toml"]["lines"]
+
+
+@pytest.fixture
+def team(tmp_path):
+    """Two clones of one shared repo, as two laptops pushing to the same GitHub repo."""
+    seed = tmp_path / "seed"
+    (seed / "auth").mkdir(parents=True)
+    (seed / "auth" / "session.py").write_text("def create_session(user):\n    return user\n")
+    git(seed, "init", "-q", "-b", "main")
+    git(seed, "add", "-A")
+    git(seed, "commit", "-qm", "base")
+    origin = tmp_path / "origin.git"
+    git(tmp_path, "clone", "-q", "--bare", str(seed), str(origin))
+    left, right = tmp_path / "left", tmp_path / "right"
+    for root in (left, right):
+        git(tmp_path, "clone", "-q", str(origin), str(root))
+    return Reporter(left), Reporter(right)
+
+
+def squawk(reporter: Reporter, later: float = 0.0) -> dict:
+    """One turn of the daemon's loop, run `later` seconds from now."""
+    root = reporter.root
+    fetch(root)
+    base = base_commit(root)
+    files = changed_files(root, base)
+    reporter.follow(base, files)
+    pushes = recent_pushes(root, time.time() + later - PUSHED_SHOWN_SECONDS)
+    return reporter.report(files, base, upstream_commit(root), pushes)
+
+
+def write(root: Path, name: str, source: str) -> None:
+    (root / name).write_text(source)
+
+
+NEW_SIGNATURE = "def create_session(user, ttl):\n    return user\n"
+STALE_CALL = "from auth.session import create_session\n\ncreate_session('lay')\n"
+AUTHORS = {"auth.session.create_session": "left"}
+
+
+def test_a_push_breaks_work_written_against_the_old_main(team):
+    changer, caller = team
+    # Edited, committed and pushed in one go, so no squawk saw the work before it left.
+    write(changer.root, "auth/session.py", NEW_SIGNATURE)
+    git(changer.root, "commit", "-qam", "ttl")
+    git(changer.root, "push", "-q")
+    pushed = squawk(changer)
+    write(caller.root, "refunds.py", STALE_CALL)
+    stale = squawk(caller)
+
+    assert pushed["files"] == [] and pushed["pushed"]["changes"]
+    [collision] = check_code({"left": pushed, "right": stale}, AUTHORS)
+    assert collision["changed_by"] == "left"
+    assert collision["commit"] == pushed["pushed"]["commit"]
+    assert collision["options"][1]["text"] == "Pull main and update the call at refunds.py:3"
+
+    # Once the push is old news, the caller's own view of main still carries it.
+    later = squawk(changer, later=PUSHED_SHOWN_SECONDS + 1)
+    assert "pushed" not in later
+    assert len(check_code({"left": later, "right": stale}, AUTHORS)) == 1
+
+
+def test_pulling_without_fixing_the_call_still_collides(team):
+    changer, caller = team
+    write(changer.root, "auth/session.py", NEW_SIGNATURE)
+    git(changer.root, "commit", "-qam", "ttl")
+    git(changer.root, "push", "-q")
+    write(caller.root, "refunds.py", STALE_CALL)
+    squawk(caller)
+    git(caller.root, "pull", "-q")
+    reports = {"left": squawk(changer), "right": squawk(caller)}
+    assert len(check_code(reports, AUTHORS)) == 1
+
+    write(caller.root, "refunds.py", STALE_CALL.replace("'lay'", "'lay', 60"))
+    reports["right"] = squawk(caller)
+    assert check_code(reports, AUTHORS) == []
+
+
+def test_the_authors_unpushed_fix_on_main_settles_it(team):
+    changer, caller = team
+    write(changer.root, "auth/session.py", NEW_SIGNATURE)
+    git(changer.root, "commit", "-qam", "ttl")
+    git(changer.root, "push", "-q")
+    write(caller.root, "refunds.py", STALE_CALL)
+    write(changer.root, "auth/session.py", NEW_SIGNATURE.replace("ttl", "ttl=60"))
+    assert check_code({"left": squawk(changer), "right": squawk(caller)}, AUTHORS) == []
+
+
+def test_a_push_by_someone_detente_never_saw_is_credited_to_main(team):
+    changer, caller = team
+    write(changer.root, "auth/session.py", NEW_SIGNATURE)
+    git(changer.root, "commit", "-qam", "ttl")
+    git(changer.root, "push", "-q")
+    write(caller.root, "refunds.py", STALE_CALL)
+    [collision] = check_code({"right": squawk(caller)})
+    assert collision["changed_by"] == "main"
+    assert [option["agent"] for option in collision["options"]] == ["right", "right"]
+    assert collision["options"][0]["text"] == "Give ttl a default on main"
+
+
+def test_work_with_nothing_unpushed_reports_no_main_changes(team):
+    changer, caller = team
+    write(changer.root, "auth/session.py", NEW_SIGNATURE)
+    git(changer.root, "commit", "-qam", "ttl")
+    git(changer.root, "push", "-q")
+    assert "upstream" not in squawk(caller)
