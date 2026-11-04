@@ -29,7 +29,9 @@ def ignore_locally(root: Path) -> None:
     exclude = git_path(root, "info/exclude")
     exclude.parent.mkdir(parents=True, exist_ok=True)
     lines = exclude.read_text().splitlines() if exclude.exists() else []
-    for entry in (".detente", ".claude/settings.local.json"):
+    # Nobody edits the last three: Switch Console keeps each agent's settings in .switch/,
+    # and Python writes bytecode whenever an agent runs the code.
+    for entry in (".detente", ".claude/settings.local.json", ".switch/", "__pycache__/", "*.pyc"):
         if entry not in lines:
             lines.append(entry)
     exclude.write_text("\n".join(lines) + "\n")
@@ -44,19 +46,29 @@ def install_commit_gate(root: Path) -> None:
     hook.chmod(0o755)
 
 
+CLAUDE_HOOKS = (
+    ("PreToolUse", "Edit|Write|MultiEdit|NotebookEdit", "edit"),
+    # Agents edit with shell commands too, so Bash is checked before and after.
+    ("PreToolUse", "Bash", "shell-before"),
+    ("PostToolUse", "Bash", "shell-after"),
+)
+
+
+def ours(entry: dict, mode: str) -> bool:
+    return any(hook.get("command", "").endswith(f'gate.py" {mode}') for hook in entry["hooks"])
+
+
 def install_edit_gate(root: Path) -> None:
     settings_file = root / ".claude" / "settings.local.json"
     settings_file.parent.mkdir(exist_ok=True)
     settings = json.loads(settings_file.read_text()) if settings_file.exists() else {}
-    command = f'"{sys.executable}" "{GATE}" edit'
-    hooks = settings.setdefault("hooks", {}).setdefault("PreToolUse", [])
-    if not any(MARKER in json.dumps(entry) and "gate.py" in json.dumps(entry) for entry in hooks):
-        hooks.append(
-            {
-                "matcher": "Edit|Write|MultiEdit|NotebookEdit",
-                "hooks": [{"type": "command", "command": command}],
-            }
-        )
+    hooks = settings.setdefault("hooks", {})
+    for event, matcher, mode in CLAUDE_HOOKS:
+        command = f'"{sys.executable}" "{GATE}" {mode}'
+        # Replace our own entry rather than skipping it, so a moved checkout gets fresh paths.
+        others = [entry for entry in hooks.get(event, []) if not ours(entry, mode)]
+        hook = {"type": "command", "command": command}
+        hooks[event] = [*others, {"matcher": matcher, "hooks": [hook]}]
     settings_file.write_text(json.dumps(settings, indent=2) + "\n")
 
 

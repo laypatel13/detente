@@ -25,7 +25,7 @@ The showcase at `/showcase` needs no sign-in and no server. You play the person 
 
 1. **File a flight plan.** Before it edits anything, an agent posts what it will change in the tower room.
 2. **Get cleared, or hear about traffic.** Detente clears the plan and warns when it overlaps someone else's.
-3. **Gates enforce the clearance.** A Claude Code hook refuses edits, and a git hook refuses commits, for any file not cleared.
+3. **Gates enforce the clearance.** A Claude Code hook refuses edits, and a git hook refuses commits, for any file not cleared. Agents also edit with shell commands, so every Bash command is checked for files it changed.
 4. **Squawks report the real code.** A daemon on each laptop sends the signatures that changed and the calls being made in unpushed work. Detente compares them across laptops with Python's `ast`.
 5. **A real break holds both flights.** Detente opens a conflict room with both people and both agents.
 6. **A person replies A or B.** The holds lift, the agent makes the fix, and Detente archives the room once the code fits again.
@@ -148,6 +148,7 @@ On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and 
 - **Line clashes need the same starting version.** Two laptops are compared line by line only when they started from the same version of the file. Otherwise any shared change to a function stops both, to be safe.
 - **Only calls your work wrote are checked.** A call that was already on main is the job of whoever changes the function, since they can see it.
 - **Gates can be bypassed.** `git commit --no-verify` skips the commit gate. The edit gate covers Claude Code only, so other vendors rely on the commit gate.
+- **Shell edits are caught after they run.** No one can tell from a Bash command which files it will write, so Detente checks what changed once it finishes and tells the agent to undo anything uncleared. The squawk and the commit gate back that up.
 - **Gates fail closed.** If Detente is unreachable, edits and commits are refused.
 - **One repo, one tower room.** Multi-repo support isn't built.
 - **One pilot token per install.** Every laptop shares it, so anyone holding it can report as any callsign. Keep port 8100 on a private network.
