@@ -1,0 +1,46 @@
+# Private planning notes, never in the public repo
+plan/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Web
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Local state
+*.db
+*.db-*
+*.sqlite3
+*.log
+.DS_Store
+
+# Secrets: every .env stays local, only the example ships
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local secrets for the Switch stack
+switch/.env
+
+# Editors and local agent tooling (the design skill is someone else's)
+.vscode/
+.idea/
+.claude/
+skills-lock.json
+
+# Design review output
+.taste-skill/

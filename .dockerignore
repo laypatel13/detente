@@ -1,0 +1,10 @@
+.git
+.env
+.venv
+.claude
+*.db
+plan
+switch/.env
+frontend/node_modules
+frontend/.next
+**/__pycache__
