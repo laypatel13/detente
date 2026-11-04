@@ -1,0 +1,167 @@
+{
+  "_comment": "Pilot planes, facing right. Merge 'shared' with one owner's colors. Frames alternate the propeller.",
+  "width": 22,
+  "height": 13,
+  "shared": {
+    "K": "#000000",
+    "W": "#ffffff",
+    "w": "#c9ced6",
+    "P": "#000000"
+  },
+  "owners": {
+    "lay": {
+      "B": "#378add",
+      "D": "#185fa5"
+    },
+    "a": {
+      "B": "#ec6a3c",
+      "D": "#a83f1b"
+    },
+    "b": {
+      "B": "#8d7cf0",
+      "D": "#5a48c0"
+    },
+    "c": {
+      "B": "#2bb3a3",
+      "D": "#17796e"
+    },
+    "d": {
+      "B": "#e86aa6",
+      "D": "#a93a70"
+    },
+    "e": {
+      "B": "#8bbf3a",
+      "D": "#5b8220"
+    },
+    "f": {
+      "B": "#d8dce0",
+      "D": "#8d939b"
+    },
+    "g": {
+      "B": "#c28a56",
+      "D": "#855a32"
+    }
+  },
+  "names": {
+    "lay": "Wilco",
+    "a": "Mayday",
+    "b": "Squawk",
+    "c": "Niner",
+    "d": "Pan-Pan",
+    "e": "Chocks",
+    "f": "Echo",
+    "g": "Bravo"
+  },
+  "moods": {
+    "cleared": {
+      "says": "cleared",
+      "frames": [
+        [
+          ".KKK..................",
+          "KDDDK.................",
+          "KDDDDKKKKKKKKKKK......",
+          "KDDDDDBBBBBBBBBBKK..K.",
+          ".KKBBBBBBBBWWWBWWWKKwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKK.",
+          "...KKDDDDDDDDDDDKK....",
+          ".....KwKwKKKKwKwK.....",
+          ".....KwwwK..KwwwK.....",
+          "......KKK....KKK......"
+        ],
+        [
+          ".KKK................K.",
+          "KDDDK..............KwK",
+          "KDDDDKKKKKKKKKKK...KwK",
+          "KDDDDDBBBBBBBBBBKK.KwK",
+          ".KKBBBBBBBBWWWBWWWKKwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKwK",
+          "...KKDDDDDDDDDDDKK.KwK",
+          ".....KwKwKKKKwKwK..KwK",
+          ".....KwwwK..KwwwK...K.",
+          "......KKK....KKK......"
+        ]
+      ]
+    },
+    "hold": {
+      "says": "holding",
+      "frames": [
+        [
+          ".KKK..................",
+          "KDDDK.................",
+          "KDDDDKKKKKKKKKKK......",
+          "KDDDDDBBBBBBBBBBKK..K.",
+          ".KKBBBBBBBBDDDBDDDKKwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KBBBBBBBBBWPPBWPPBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKK.",
+          "...KKDDDDDDDDDDDKK....",
+          ".....KwKwKKKKwKwK.....",
+          ".....KwwwK..KwwwK.....",
+          "......KKK....KKK......"
+        ]
+      ]
+    },
+    "worried": {
+      "says": "collision course",
+      "frames": [
+        [
+          ".KKK..................",
+          "KDDDK.................",
+          "KDDDDKKKKKKKKKKK......",
+          "KDDDDDBBBBBBBBBBKK..K.",
+          ".KKBBBBBBBBWWWBWWWKKwK",
+          ".KBBBBBBBBBWPWBWPWBWwK",
+          ".KBBBBBBBBBWWWBWWWBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKK.",
+          "...KKDDDDDDDDDDDKK....",
+          ".....KwKwKKKKwKwK.....",
+          ".....KwwwK..KwwwK.....",
+          "......KKK....KKK......"
+        ],
+        [
+          ".KKK................K.",
+          "KDDDK..............KwK",
+          "KDDDDKKKKKKKKKKK...KwK",
+          "KDDDDDBBBBBBBBBBKK.KwK",
+          ".KKBBBBBBBBWWWBWWWKKwK",
+          ".KBBBBBBBBBWPWBWPWBWwK",
+          ".KBBBBBBBBBWWWBWWWBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKwK",
+          "...KKDDDDDDDDDDDKK.KwK",
+          ".....KwKwKKKKwKwK..KwK",
+          ".....KwwwK..KwwwK...K.",
+          "......KKK....KKK......"
+        ]
+      ]
+    },
+    "happy": {
+      "says": "landed",
+      "frames": [
+        [
+          ".KKK..................",
+          "KDDDK.................",
+          "KDDDDKKKKKKKKKKK......",
+          "KDDDDDBBBBBBBBBBKK..K.",
+          ".KKBBBBBBBBBBBBBBBKKwK",
+          ".KBBBBBBBBBBWBBBWBBWwK",
+          ".KBBBBBBBBBWBWBWBWBWwK",
+          ".KWWWWWWWWBBBBBBBBBWwK",
+          "..KBBDDDDDDDBBKKKBKKK.",
+          "...KKDDDDDDDDDDDKK....",
+          ".....KwKwKKKKwKwK.....",
+          ".....KwwwK..KwwwK.....",
+          "......KKK....KKK......"
+        ]
+      ]
+    }
+  }
+}

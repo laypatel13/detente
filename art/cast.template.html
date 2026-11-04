@@ -1,0 +1,234 @@
+<title>Detente Cast</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working character sheet. Sprites are the only pixel art; everything around them is the clean product style. */
+:root {
+  --bg: #0f1430; --panel: #171d40; --line: #2c3566; --ink: #f1efe6; --dim: #a8b0d4;
+  --amber: #ffb547; --red: #ff5a5f; --ring: #3c4784; --sweep: #5ee6c1;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #e9f0fa; --panel: #ffffff; --line: #c5d1e6; --ink: #141a3a; --dim: #4c5680;
+    --amber: #9a5700; --red: #c62f35; --ring: #b5c4de; --sweep: #1f6f8b; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #e9f0fa; --panel: #ffffff; --line: #c5d1e6; --ink: #141a3a; --dim: #4c5680;
+  --amber: #9a5700; --red: #c62f35; --ring: #b5c4de; --sweep: #1f6f8b; color-scheme: light;
+}
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); }
+.page {
+  max-width: 1040px; margin: 0 auto; display: grid; gap: 48px; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: grid; gap: 8px; max-width: 62ch; }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; line-height: 1.1; text-wrap: balance; margin: 0; }
+h1 { font-size: 44px; }
+h2 { font-size: 28px; }
+h3 { font-size: 16px; font-weight: 600; margin: 0; }
+p { margin: 0; }
+.dim { color: var(--dim); }
+section { display: grid; gap: 16px; min-width: 0; }
+canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: pixelated; }
+code, .mono { font-family: var(--mono); font-size: 14px; }
+
+.moods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mood {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center;
+  padding: 16px; margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.mood figcaption { display: grid; gap: 4px; min-width: 0; }
+.mood .mono { color: var(--amber); }
+.mood p { font-size: 14px; color: var(--dim); }
+
+.scroll { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; }
+th { font-size: 14px; font-weight: 600; color: var(--dim); text-align: left; padding: 12px 16px; }
+td { padding: 8px 16px; border-top: 1px solid var(--line); }
+tbody th { color: var(--ink); white-space: nowrap; border-top: 1px solid var(--line); }
+
+.context { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.scope { position: relative; width: 100%; max-width: 420px; aspect-ratio: 1; margin: 0 auto; }
+.scope svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.scope circle, .scope .spoke { fill: none; stroke: var(--ring); stroke-width: 1; }
+.scope text { fill: var(--dim); font: 400 11px var(--mono); }
+.scope .link { stroke: var(--red); stroke-width: 2; stroke-linecap: round; animation: flash 1s ease-in-out infinite; }
+.scope .sweep { stroke: var(--sweep); stroke-width: 1.5; stroke-linecap: round; transform-origin: 180px 180px; animation: spin 7s linear infinite; }
+.scope canvas { position: absolute; transform: translate(-50%, -50%); }
+.scope canvas.flip { transform: translate(-50%, -50%) scaleX(-1); }
+.pane { padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.chat { display: grid; gap: 16px; align-content: start; }
+.msg { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: start; }
+.msg b { font-weight: 600; }
+.msg code { display: block; overflow-wrap: anywhere; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes flash { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .scope .sweep, .scope .link { animation: none; } }
+@media (max-width: 860px) { .moods { grid-template-columns: repeat(2, minmax(0, 1fr)); } .context { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .moods { grid-template-columns: minmax(0, 1fr); } h1 { font-size: 36px; } }
+</style>
+
+<main class="page">
+  <header>
+    <h1>Detente Cast</h1>
+    <p class="dim">Roger and the pilots, redrawn as cartoonish pixel characters. Only the sprites are pixelated. Everything around them uses the clean product style.</p>
+  </header>
+
+  <section aria-labelledby="roger-title">
+    <h2 id="roger-title">Roger, the tower</h2>
+    <div class="moods" id="moods"></div>
+  </section>
+
+  <section aria-labelledby="pilots-title">
+    <h2 id="pilots-title">The pilots</h2>
+    <p class="dim">One plane per agent, colored by its owner.</p>
+    <div class="scroll"><table id="pilots"></table></div>
+  </section>
+
+  <section aria-labelledby="context-title">
+    <h2 id="context-title">In the product</h2>
+    <p class="dim">Example radar and chat, with sprites at 2× on a smooth radar.</p>
+    <div class="context">
+      <div class="pane">
+        <div class="scope" id="scope">
+          <svg viewBox="0 0 360 360" role="img" aria-label="Radar with Roger in the center and two planes joined by a red collision line">
+            <circle cx="180" cy="180" r="172"></circle>
+            <circle cx="180" cy="180" r="120"></circle>
+            <circle cx="180" cy="180" r="68"></circle>
+            <path class="spoke" d="M180 8V112M31 266L121 214M329 266L239 214"></path>
+            <text x="44" y="44">auth/</text>
+            <text x="272" y="44">billing/</text>
+            <text x="164" y="344">cart/</text>
+            <line class="sweep" x1="180" y1="180" x2="180" y2="8"></line>
+            <line class="link" x1="96" y1="96" x2="264" y2="96"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="pane chat" id="chat"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const ROGER = /*ROGER*/null;
+const PLANE = /*PLANE*/null;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const animated = [];
+
+function paint(canvas, rows, palette) {
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === ".") continue;
+      ctx.fillStyle = palette[row[x]];
+      ctx.fillRect(x, y, 1, 1);
+    }
+  });
+}
+
+function sprite(frames, palette, scale, label, speed) {
+  const canvas = document.createElement("canvas");
+  canvas.width = frames[0][0].length;
+  canvas.height = frames[0].length;
+  canvas.style.width = canvas.width * scale + "px";
+  canvas.style.height = canvas.height * scale + "px";
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", label);
+  paint(canvas, frames[0], palette);
+  if (!reduced && frames.length > 1) animated.push({ canvas, frames, palette, speed, frame: 0, next: 0 });
+  return canvas;
+}
+
+const rogerPalette = mood => ({ ...ROGER.palette, ...ROGER.accent[mood] });
+const planePalette = owner => ({ ...PLANE.shared, ...PLANE.owners[owner] });
+
+const MOODS = [
+  ["watching", "Flights cleared", "Eyes scan left and right. Blue beacon."],
+  ["traffic", "TRAFFIC", "Side-eye and a smirk. Amber beacon."],
+  ["collision", "COLLISION", "Hands up, wide eyes, a sweat drop. Red beacon."],
+  ["resolved", "RESOLVED", "Happy eyes, a grin and sparkles. Green beacon."],
+  ["stop", "Ground stop", "Angry brows and a stop paddle. Steady red beacon."],
+  ["resting", "No flights", "Asleep with a z. Dim beacon."],
+];
+
+const moods = document.getElementById("moods");
+for (const [mood, name, note] of MOODS) {
+  const data = ROGER.moods[mood];
+  const figure = document.createElement("figure");
+  figure.className = "mood";
+  figure.append(sprite(data.frames, rogerPalette(mood), 3, "Roger, " + name, 900));
+  const caption = document.createElement("figcaption");
+  caption.innerHTML = "<h3></h3><span class='mono'></span><p></p>";
+  caption.children[0].textContent = name;
+  caption.children[1].textContent = data.face;
+  caption.children[2].textContent = note;
+  figure.append(caption);
+  moods.append(figure);
+}
+
+const OWNERS = [["lay", "Lay"], ["a", "Dev A"], ["b", "Dev B"]];
+const STATES = [["cleared", "Cleared"], ["hold", "Holding"], ["worried", "Worried"], ["happy", "Landed"]];
+const pilots = document.getElementById("pilots");
+const head = pilots.createTHead().insertRow();
+head.append(Object.assign(document.createElement("th"), { scope: "col", textContent: "Owner" }));
+for (const [, label] of STATES) head.append(Object.assign(document.createElement("th"), { scope: "col", textContent: label }));
+const body = pilots.createTBody();
+for (const [owner, name] of OWNERS) {
+  const row = body.insertRow();
+  row.append(Object.assign(document.createElement("th"), { scope: "row", textContent: name }));
+  for (const [state, label] of STATES) {
+    row.insertCell().append(sprite(PLANE.moods[state].frames, planePalette(owner), 3, name + "'s plane, " + label, 110));
+  }
+}
+
+const scope = document.getElementById("scope");
+function place(canvas, left, top, flip) {
+  canvas.style.left = left + "%";
+  canvas.style.top = top + "%";
+  if (flip) canvas.classList.add("flip");
+  scope.append(canvas);
+}
+place(sprite(ROGER.moods.collision.frames, rogerPalette("collision"), 2, "Roger, alarmed", 500), 50, 50);
+place(sprite(PLANE.moods.worried.frames, planePalette("lay"), 2, "Lay's plane, worried", 110), 26.7, 26.7);
+place(sprite(PLANE.moods.worried.frames, planePalette("a"), 2, "Dev A's plane, worried", 110), 73.3, 26.7, true);
+
+const head20 = mood => ROGER.moods[mood].frames.map(rows => rows.slice(0, 20));
+const MESSAGES = [
+  ["watching", "[o_o] CLEARED lay-claude · auth/session.py"],
+  ["traffic", "[¬_¬] TRAFFIC a-codex uses create_session"],
+  ["collision", "[O_O]! COLLISION refunds.py:42"],
+  ["resolved", "[^_^] RESOLVED by Dev A"],
+];
+const chat = document.getElementById("chat");
+for (const [mood, text] of MESSAGES) {
+  const msg = document.createElement("div");
+  msg.className = "msg";
+  msg.append(sprite(head20(mood), rogerPalette(mood), 2, "Roger's avatar", 900));
+  const copy = document.createElement("div");
+  copy.innerHTML = "<b>Detente</b><code></code>";
+  copy.children[1].textContent = text;
+  msg.append(copy);
+  chat.append(msg);
+}
+
+if (animated.length) {
+  requestAnimationFrame(function tick(now) {
+    for (const item of animated) {
+      if (now < item.next) continue;
+      item.frame = (item.frame + 1) % item.frames.length;
+      item.next = now + item.speed;
+      paint(item.canvas, item.frames[item.frame], item.palette);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+</script>
