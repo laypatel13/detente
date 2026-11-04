@@ -93,15 +93,15 @@ async def main() -> None:
     tower_channel = await wait_for(lambda: person.channel("tower"), "the tower channel")
     step("a person is in the tower channel on Mattermost")
 
-    lay_name, dev_name = unique("lay-claude"), unique("a-codex")
+    lay_name, developer_name = unique("lay-claude"), unique("a-codex")
     lay = await Pilot.join(url, token, lay_name, room_id, host)
-    dev = await Pilot.join(url, token, dev_name, room_id, host)
+    developer = await Pilot.join(url, token, developer_name, room_id, host)
     step("two real agents joined the tower room")
 
     left, right = make_checkouts(base)
     lay_checkout = Checkout(left, lay_name, username, "Claude Code")
-    dev_checkout = Checkout(right, dev_name, username, "Codex")
-    for checkout in (lay_checkout, dev_checkout):
+    developer_checkout = Checkout(right, developer_name, username, "Codex")
+    for checkout in (lay_checkout, developer_checkout):
         checkout.install(API, env["DETENTE_PILOT_TOKEN"])
         checkout.start_squawk()
 
@@ -121,15 +121,15 @@ async def main() -> None:
         assert refused.returncode == 2 and "No clearance" in refused.stderr
         step("edit gate allows the cleared file and refuses another")
 
-        await dev.say(
+        await developer.say(
             "FLIGHT PLAN\ntask: refunds\nedit: billing/refunds.py\n"
             "uses: auth.session.create_session"
         )
-        await wait_for(lambda: feed_has(http, "TRAFFIC", dev_name), "TRAFFIC")
+        await wait_for(lambda: feed_has(http, "TRAFFIC", developer_name), "TRAFFIC")
         step("second plan raised TRAFFIC before any code existed")
 
         lay_checkout.write("auth/session.py", NEW_SIGNATURE)
-        dev_checkout.write("billing/refunds.py", BROKEN_CALLER)
+        developer_checkout.write("billing/refunds.py", BROKEN_CALLER)
         await wait_for(lambda: feed_has(http, "COLLISION"), "COLLISION")
         conflict = (await state(http))["conflicts"][0]
         assert conflict["reason"] == "is missing required argument ttl"
@@ -140,8 +140,8 @@ async def main() -> None:
         assert (await state(http))["mood"] == "collision"
         held = lay_checkout.edit_gate("auth/session.py")
         assert held.returncode == 2 and "Holding" in held.stderr
-        assert dev_checkout.edit_gate("billing/refunds.py").returncode == 2
-        assert dev_checkout.commit("broken").returncode == 1
+        assert developer_checkout.edit_gate("billing/refunds.py").returncode == 2
+        assert developer_checkout.commit("broken").returncode == 1
         step("both flights hold: edit gates and the commit gate refuse")
 
         if RESTART:
@@ -161,10 +161,10 @@ async def main() -> None:
 
         await person.post(room_channel, "B")
         await wait_for(lambda: feed_has(http, "DECIDED", "(B)"), "the decision")
-        assert dev_checkout.edit_gate("billing/refunds.py").returncode == 0
+        assert developer_checkout.edit_gate("billing/refunds.py").returncode == 0
         step("a person picked B on Mattermost and the holds lifted")
 
-        dev_checkout.write("billing/refunds.py", FIXED_CALLER)
+        developer_checkout.write("billing/refunds.py", FIXED_CALLER)
         await wait_for(lambda: feed_has(http, "RESOLVED"), "RESOLVED")
         assert (await state(http))["conflicts"] == []
         rooms = await host.call("list_rooms", include_archived=True)
@@ -203,12 +203,12 @@ async def main() -> None:
         step("the Airspace board is a live room document")
         print("\nEverything passed.")
     finally:
-        for checkout in (lay_checkout, dev_checkout):
+        for checkout in (lay_checkout, developer_checkout):
             checkout.stop()
         await lay.say("LANDED")
-        await dev.say("LANDED")
+        await developer.say("LANDED")
         await lay.close()
-        await dev.close()
+        await developer.close()
         await host.close()
         await http.aclose()
         shutil.rmtree(base, ignore_errors=True)

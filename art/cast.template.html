@@ -175,7 +175,7 @@ for (const [mood, name, note] of MOODS) {
   moods.append(figure);
 }
 
-const OWNERS = [["lay", "Lay"], ["a", "Dev A"], ["b", "Dev B"]];
+const OWNERS = [["lay", "Lay"], ["a", "Developer A"], ["b", "Developer B"]];
 const STATES = [["cleared", "Cleared"], ["hold", "Holding"], ["worried", "Worried"], ["happy", "Landed"]];
 const pilots = document.getElementById("pilots");
 const head = pilots.createTHead().insertRow();
@@ -199,14 +199,14 @@ function place(canvas, left, top, flip) {
 }
 place(sprite(ROGER.moods.collision.frames, rogerPalette("collision"), 2, "Roger, alarmed", 500), 50, 50);
 place(sprite(PLANE.moods.worried.frames, planePalette("lay"), 2, "Lay's plane, worried", 110), 26.7, 26.7);
-place(sprite(PLANE.moods.worried.frames, planePalette("a"), 2, "Dev A's plane, worried", 110), 73.3, 26.7, true);
+place(sprite(PLANE.moods.worried.frames, planePalette("a"), 2, "Developer A's plane, worried", 110), 73.3, 26.7, true);
 
 const head20 = mood => ROGER.moods[mood].frames.map(rows => rows.slice(0, 20));
 const MESSAGES = [
   ["watching", "[o_o] CLEARED lay-claude · auth/session.py"],
   ["traffic", "[¬_¬] TRAFFIC a-codex uses create_session"],
   ["collision", "[O_O]! COLLISION refunds.py:42"],
-  ["resolved", "[^_^] RESOLVED by Dev A"],
+  ["resolved", "[^_^] RESOLVED by Developer A"],
 ];
 const chat = document.getElementById("chat");
 for (const [mood, text] of MESSAGES) {

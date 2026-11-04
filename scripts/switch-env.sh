@@ -8,6 +8,10 @@ secret() { openssl rand -hex 24; }
 
 cat > "$file" <<EOF
 SWITCH_VERSION=0.31.0
+# Off Switch's default ports, so projects on 3000, 8000 and 5432 can run alongside.
+API_HOST_PORT=8110
+GATEWAY_HOST_PORT=3110
+POSTGRES_HOST_PORT=5442
 DB_USER=switch_app
 DB_PASSWORD=$(secret)
 DB_OWNER_USER=postgres

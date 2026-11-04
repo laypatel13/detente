@@ -89,9 +89,9 @@ async def capture(http: httpx.AsyncClient, frames: list[dict]) -> None:
 
 
 def third_checkout(base: Path) -> Path:
-    path = base / "dev-b"
+    path = base / "developer-b"
     subprocess.run(
-        ["git", "worktree", "add", "-q", "-b", "dev-b", str(path)],
+        ["git", "worktree", "add", "-q", "-b", "developer-b", str(path)],
         cwd=base / "shoplite", check=True,
     )
     return path
@@ -145,15 +145,15 @@ async def fly(choice: str) -> tuple[list[dict], dict[str, str]]:
         await wait_for(lambda: frames, "the first frame")
 
         person = await Person.sign_in(username, switch_env["MATTERMOST_USER_PASSWORD"])
-        lay_name, dev_name, third_name = unique("lay-claude"), unique("a-codex"), unique("b-opencode")
-        lay, dev, third = await join(lay_name), await join(dev_name), await join(third_name)
+        lay_name, developer_name, third_name = unique("lay-claude"), unique("a-codex"), unique("b-opencode")
+        lay, developer, third = await join(lay_name), await join(developer_name), await join(third_name)
 
         left, right = make_checkouts(base)
         lay_checkout = Checkout(left, lay_name, username, "Claude Code")
-        dev_checkout = Checkout(right, dev_name, "dev-a", "Codex")
+        developer_checkout = Checkout(right, developer_name, "developer-a", "Codex")
         third_path = third_checkout(base)
-        third_laptop = Checkout(third_path, third_name, "dev-b", "OpenCode")
-        laptops.extend((lay_checkout, dev_checkout, third_laptop))
+        third_laptop = Checkout(third_path, third_name, "developer-b", "OpenCode")
+        laptops.extend((lay_checkout, developer_checkout, third_laptop))
         for laptop in laptops:
             laptop.install(API, token)
             laptop.start_squawk()
@@ -165,17 +165,17 @@ async def fly(choice: str) -> tuple[list[dict], dict[str, str]]:
         await wait_for(lambda: said("CLEARED", lay_name), "the first clearance")
         await third.say("FLIGHT PLAN\ntask: cart rounding\nedit: cart/totals.py")
         await wait_for(lambda: said("CLEARED", third_name), "the second clearance")
-        await dev.say(
+        await developer.say(
             "FLIGHT PLAN\ntask: refunds\nedit: billing/refunds.py\n"
             "uses: auth.session.create_session"
         )
-        await wait_for(lambda: said("TRAFFIC", dev_name), "traffic")
+        await wait_for(lambda: said("TRAFFIC", developer_name), "traffic")
         await asyncio.sleep(1.5)
 
         totals = third_path / "cart" / "totals.py"
         third_laptop.write("cart/totals.py", f"{totals.read_text()}\n# rounds to two places\n")
         lay_checkout.write("auth/session.py", NEW_SIGNATURE)
-        dev_checkout.write("billing/refunds.py", BROKEN_CALLER)
+        developer_checkout.write("billing/refunds.py", BROKEN_CALLER)
         await wait_for(lambda: said("COLLISION"), "the collision")
         await wait_for(lambda: said("DECISION"), "the decision card")
         conflict = (await http.get("/radar/state")).json()["conflicts"][0]
@@ -189,13 +189,13 @@ async def fly(choice: str) -> tuple[list[dict], dict[str, str]]:
         if choice == "A":
             lay_checkout.write("auth/session.py", DEFAULTED_SIGNATURE)
         else:
-            dev_checkout.write("billing/refunds.py", FIXED_CALLER)
+            developer_checkout.write("billing/refunds.py", FIXED_CALLER)
         await wait_for(lambda: said("RESOLVED"), "the fix")
         await asyncio.sleep(1.5)
 
         for laptop in laptops:
             laptop.stop()
-        for pilot in (third, lay, dev):
+        for pilot in (third, lay, developer):
             await pilot.say("LANDED")
             await asyncio.sleep(1)
 
@@ -224,13 +224,13 @@ async def fly(choice: str) -> tuple[list[dict], dict[str, str]]:
     return frames, {
         agent_name: "detente",
         lay_name: "lay-claude",
-        dev_name: "a-codex",
+        developer_name: "a-codex",
         third_name: "b-opencode",
         f'"by":"{username}"': '"by":"you"',
         f"by {username} (": "by you (",
         f'"sender":"{username}"': '"sender":"you"',
         f'"person":"{username}"': '"person":"lay"',
-        f"{username} or dev-a, reply": "lay or dev-a, reply",
+        f"{username} or developer-a, reply": "lay or developer-a, reply",
         conflict["id"]: "conflict-create-session-3f1a",
     }
 

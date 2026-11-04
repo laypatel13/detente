@@ -106,7 +106,7 @@ def collide(tower: Tower) -> dict:
     message(tower, "lay-claude", PLAN_A)
     message(tower, "a-codex", PLAN_B)
     asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(BROKEN)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
     conflict = tower.airspace.conflicts("open")[0]
     tower.conflict_rooms["conflict-room"] = FakeLink(None, "conflict-room", None)
     return conflict
@@ -150,14 +150,14 @@ def test_collision_holds_both_flights_and_opens_a_linked_room(tower):
 
     room = called("create_room")[0]
     assert room["agent_names"] == ["detente", "lay-claude", "a-codex"]
-    assert room["user_names"] == ["lay", "dev"]
+    assert room["user_names"] == ["lay", "developer"]
     labels = {link["label"] for link in called("link_rooms")}
     assert labels == {"active conflict", "parent"}
 
 
 def test_a_repeat_squawk_opens_no_second_conflict(tower):
     collide(tower)
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(BROKEN)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
     assert len(called("create_room")) == 1
 
 
@@ -185,7 +185,7 @@ def test_a_person_picks_and_the_holds_lift(tower, reply):
 def test_fixed_code_resolves_and_archives(tower):
     collide(tower)
     conflict_message(tower, "lay", "B")
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(FIXED)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(FIXED)))
     assert tower.airspace.conflicts("open", "decided") == []
     assert called("archive_room") == [{"room_id": "conflict-room"}]
     assert "RESOLVED" in said()
@@ -195,7 +195,7 @@ def test_a_resolved_conflict_ends_the_traffic_warning_between_those_flights(towe
     collide(tower)
     tower.airspace.add_traffic("a-codex", "lay-claude", "uses create_session")
     conflict_message(tower, "lay", "B")
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(FIXED)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(FIXED)))
     assert tower.airspace.snapshot()["links"] == []
 
 
@@ -252,11 +252,11 @@ def test_a_failed_room_call_is_retried_on_the_next_squawk(tower, monkeypatch):
     message(tower, "lay-claude", PLAN_A)
     message(tower, "a-codex", PLAN_B)
     asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(BROKEN)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
     assert tower.airspace.conflicts("open") == []
 
     monkeypatch.setattr(FakeLink, "call", original)
-    asyncio.run(tower.on_squawk("a-codex", "dev", "Codex", caller(BROKEN)))
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
     assert len(tower.airspace.conflicts("open")) == 1
 
 
@@ -401,5 +401,5 @@ def test_radar_marks_collision_flights_and_owner_colors(tower):
 
 def test_eight_people_get_eight_plane_colors(tower):
     for index in range(8):
-        tower._add_crew(f"dev{index}-claude", f"dev{index}", "Claude Code")
+        tower._add_crew(f"developer{index}-claude", f"developer{index}", "Claude Code")
     assert len({member["owner"] for member in tower.airspace.get("crew", [])}) == 8

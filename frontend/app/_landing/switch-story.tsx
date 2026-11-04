@@ -17,7 +17,7 @@ type Part = {
 
 const TOWER = "tower";
 const CONFLICT = "conflict-create-session-3f1a";
-const EVERYONE = ["Detente", "lay", "dev-a", "dev-b", "Wilco", "Mayday", "Squawk"];
+const EVERYONE = ["Detente", "lay", "developer-a", "developer-b", "Wilco", "Mayday", "Squawk"];
 
 const PARTS: Part[] = [
   {
@@ -36,7 +36,7 @@ const PARTS: Part[] = [
       { name: TOWER, open: false },
       { name: CONFLICT, open: true },
     ],
-    members: ["Detente", "lay", "dev-a", "Wilco", "Mayday"],
+    members: ["Detente", "lay", "developer-a", "Wilco", "Mayday"],
     feed: [COLLISION, DECISION],
   },
   {

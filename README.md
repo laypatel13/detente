@@ -50,9 +50,10 @@ make user NAME=yourname
 | Showcase | http://localhost:3100/showcase |
 | Detente's API | http://localhost:8100 |
 | Mattermost, for chat | http://localhost:8065 |
-| Switch Gateway | http://localhost:3000 |
+| Switch Gateway | http://localhost:3110 |
+| Switch's agent API | http://localhost:8110 |
 
-`make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
+`make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects. To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
 
 ## Sign in
 

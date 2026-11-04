@@ -60,14 +60,14 @@ def test_a_wrong_password_or_unknown_name_gets_nothing(accounts):
 
 
 def test_two_accounts_with_one_password_store_different_hashes(accounts, path):
-    accounts.add("dev-a", PASSWORD)
+    accounts.add("developer-a", PASSWORD)
     hashes = sqlite3.connect(path).execute("SELECT hash FROM accounts").fetchall()
     assert hashes[0] != hashes[1]
 
 
 def test_weak_or_duplicate_accounts_are_refused(accounts):
     with pytest.raises(ValueError, match="at least"):
-        accounts.add("dev-a", "short")
+        accounts.add("developer-a", "short")
     with pytest.raises(ValueError, match="already"):
         accounts.add("lay", PASSWORD)
     with pytest.raises(ValueError, match="lowercase"):

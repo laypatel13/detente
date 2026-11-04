@@ -42,7 +42,7 @@ async def setup(url: str, token: str, pilots: list[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--url", default="http://localhost:8000")
+    parser.add_argument("--url", default="http://localhost:8110")
     parser.add_argument("--registration-token", required=True)
     parser.add_argument("--pilot", action="append", default=[], help="Agent to add to the room")
     args = parser.parse_args()

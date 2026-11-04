@@ -159,8 +159,8 @@ def make_checkouts(base: Path) -> tuple[Path, Path]:
         ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "ShopLite"],
     ):
         subprocess.run(command, cwd=origin, check=True)
-    left, right = base / "lay", base / "dev-a"
-    for path, branch in ((left, "lay"), (right, "dev-a")):
+    left, right = base / "lay", base / "developer-a"
+    for path, branch in ((left, "lay"), (right, "developer-a")):
         subprocess.run(
             ["git", "worktree", "add", "-q", "-b", branch, str(path)], cwd=origin, check=True
         )
