@@ -240,6 +240,20 @@ def test_changing_an_uncleared_file_is_a_violation_once(tower):
     assert said().count("VIOLATION") == 1
 
 
+def test_landed_work_stays_cleared_until_it_is_pushed(tower):
+    plan = "FLIGHT PLAN\ntask: discount\nedit: cart/totals.py"
+    unpushed = {"files": ["cart/totals.py"], "changes": [], "calls": []}
+    message(tower, "lay-claude", plan, "first")
+    message(tower, "lay-claude", "LANDED", "landed")
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", unpushed))
+    assert "VIOLATION" not in said()
+
+    # Once pushed, the file is no longer cleared: changing it again needs a new plan.
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", {**unpushed, "files": []}))
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", unpushed))
+    assert said().count("VIOLATION") == 1
+
+
 def test_a_failed_room_call_is_retried_on_the_next_squawk(tower, monkeypatch):
     original = FakeLink.call
 

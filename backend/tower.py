@@ -217,7 +217,8 @@ class Tower:
         return None
 
     async def _post_violations(self, callsign: str, report: Report) -> None:
-        files = check_violations(report, self.airspace.plans().get(callsign))
+        landed = self.airspace.landed_files(callsign, report["files"])
+        files = check_violations(report, self.airspace.plans().get(callsign), landed)
         key = f"violations:{callsign}"
         known = set(self.airspace.get(key, []))
         new = [path for path in files if path not in known]

@@ -96,6 +96,11 @@ class Airspace:
         self._write("INSERT OR REPLACE INTO flights VALUES (?, ?, 0)", callsign, raw)
 
     def land(self, callsign: str) -> None:
+        plan = self.plans().get(callsign)
+        if plan:
+            # Landed work is still cleared until it's pushed. See landed_files.
+            key = f"landed:{callsign}"
+            self.put(key, sorted({*self.get(key, []), *plan.edit}))
         self._write("UPDATE flights SET landed = ? WHERE callsign = ?", time.time(), callsign)
         self._write("DELETE FROM reports WHERE callsign = ?", callsign)
         self._write("DELETE FROM traffic WHERE a = ? OR b = ?", callsign, callsign)
@@ -103,6 +108,13 @@ class Airspace:
     def plans(self) -> dict[str, FlightPlan]:
         rows = self._read("SELECT callsign, plan FROM flights WHERE landed = 0")
         return {row["callsign"]: _plan_from(row["plan"]) for row in rows}
+
+    def landed_files(self, callsign: str, unpushed: list[str]) -> list[str]:
+        """Files a landed flight cleared that are still unpushed. Pushed ones need a new plan."""
+        key = f"landed:{callsign}"
+        kept = [path for path in self.get(key, []) if path in unpushed]
+        self.put(key, kept)
+        return kept
 
     def add_traffic(self, a: str, b: str, reason: str) -> None:
         self._write("INSERT OR IGNORE INTO traffic VALUES (?, ?, ?)", a, b, reason)

@@ -1,5 +1,6 @@
 """Decide traffic, collisions and violations. Deterministic: no LLM call in here."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
@@ -237,7 +238,9 @@ def check_code(reports: dict[str, Report]) -> list[Collision]:
     return list(found.values())
 
 
-def check_violations(report: Report, plan: FlightPlan | None) -> list[str]:
-    """Layer 3, plan against code. Files changed outside the clearance."""
-    allowed = set(plan.edit) if plan else set()
+def check_violations(
+    report: Report, plan: FlightPlan | None, landed: Iterable[str] = ()
+) -> list[str]:
+    """Layer 3, plan against code. Files changed outside the clearance or a landed flight's."""
+    allowed = {*(plan.edit if plan else ()), *landed}
     return sorted(set(report["files"]) - allowed)
