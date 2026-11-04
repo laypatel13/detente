@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "name": "cognee",
+      "replayed": 59,
+      "conflicted": 2,
+      "caught": 2,
+      "clean": 57,
+      "false_stops": 0
+    },
+    {
+      "name": "ESP-Website",
+      "replayed": 75,
+      "conflicted": 2,
+      "caught": 2,
+      "clean": 73,
+      "false_stops": 0
+    },
+    {
+      "name": "django",
+      "replayed": 60,
+      "conflicted": 0,
+      "caught": 0,
+      "clean": 60,
+      "false_stops": 0
+    }
+  ]
+}

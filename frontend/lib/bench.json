@@ -1,0 +1,292 @@
+{
+  "scenarios": [
+    {
+      "name": "Both edit the same function",
+      "breaks": true,
+      "results": [
+        "flagged",
+        "flagged",
+        "stop"
+      ]
+    },
+    {
+      "name": "Same file, different functions",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "New required parameter vs a new caller",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function renamed vs a new caller",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function deleted vs a new caller",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Keyword argument renamed",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Class constructor gains a parameter",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Two plans add the same endpoint",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Returned dict key renamed",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Unrelated changes",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "quiet"
+      ]
+    },
+    {
+      "name": "Method gains a parameter vs a new caller",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Method called through an attribute",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Class method renamed",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function imported through its package",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Arguments swapped",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function made async",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Constant renamed vs a new import",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function moved to another module",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Function passed as a callback",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "quiet",
+        "stop"
+      ]
+    },
+    {
+      "name": "Same line of a config file",
+      "breaks": true,
+      "results": [
+        "flagged",
+        "flagged",
+        "stop"
+      ]
+    },
+    {
+      "name": "Both create the same new file",
+      "breaks": true,
+      "results": [
+        "flagged",
+        "flagged",
+        "stop"
+      ]
+    },
+    {
+      "name": "Different methods of one class",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Optional parameter added",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Parameter renamed, caller passes it by position",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Same name in another module",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "quiet"
+      ]
+    },
+    {
+      "name": "Different parts of one config file",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Body refactor vs a new caller",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Another method of the class changes",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "quiet",
+        "quiet"
+      ]
+    },
+    {
+      "name": "Both add a function with the same name",
+      "breaks": true,
+      "results": [
+        "quiet",
+        "flagged",
+        "stop"
+      ]
+    },
+    {
+      "name": "Both edit one function in different places",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Function and its old caller renamed together",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    },
+    {
+      "name": "Same edit on both laptops",
+      "breaks": false,
+      "results": [
+        "quiet",
+        "flagged",
+        "heads-up"
+      ]
+    }
+  ]
+}
