@@ -52,7 +52,7 @@ export const DECISION: FeedMessage = {
   sender: "Detente",
   tag: "DECISION",
   face: "[O_O]!",
-  text: "lay or developer-a, reply A or B\nA  Give ttl a default  (Wilco edits)\nB  Update the call at billing/refunds.py:5  (Mayday edits)",
+  text: "lay or developer-a, pick a fix: reply with just A or B\nA  Give ttl a default  (Wilco edits)\nB  Update the call at billing/refunds.py:5  (Mayday edits)",
 };
 
 export const REPLY: FeedMessage = {

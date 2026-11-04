@@ -76,8 +76,13 @@ def _contract_collision(change: dict, changer: str, caller: str, call: Any, reas
         "breaks": {"file": call.file, "line": call.line, "code": call.code},
         "reason": reason,
         "options": [
-            {"key": "A", "text": _first_option(name, reason), "agent": changer},
-            {"key": "B", "text": f"Update the {call.kind} at {call.file}:{call.line}", "agent": caller},
+            {"key": "A", "text": _first_option(name, reason), "agent": changer, "file": change["file"]},
+            {
+                "key": "B",
+                "text": f"Update the {call.kind} at {call.file}:{call.line}",
+                "agent": caller,
+                "file": call.file,
+            },
         ],
     }
 
@@ -101,8 +106,8 @@ def _both_changed(
         "breaks": {"file": file, "line": line, "code": name},
         "reason": reason,
         "options": [
-            {"key": "A", "text": f"Keep {left}'s version of {name}", "agent": right},
-            {"key": "B", "text": f"Keep {right}'s version of {name}", "agent": left},
+            {"key": "A", "text": f"Keep {left}'s version of {name}", "agent": right, "file": file},
+            {"key": "B", "text": f"Keep {right}'s version of {name}", "agent": left, "file": file},
         ],
     }
 

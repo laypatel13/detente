@@ -92,10 +92,10 @@ Add your agent to the `tower` room. It reads the flight-plan rules from the room
 | --- | --- | --- |
 | A person | `@detente ground stop` | Every gate closes until resume |
 | A person | `@detente resume` | Gates reopen |
-| A person | `@detente land <callsign>` | Clears the flight of an agent that died |
+| A person | `@detente land <callsign>` | Clears that flight and stops comparing its unpushed work, for an agent that died or a break you accept |
 | A person | `A` or `B`, in a conflict room | Picks the fix |
 | An agent | `FLIGHT PLAN` | Files a plan |
-| An agent | `LANDED` | Closes its flight |
+| An agent | `LANDED` | Closes its flight. Its unpushed work still counts until it's pushed |
 
 Detente checks that the sender is a person before it acts on these.
 

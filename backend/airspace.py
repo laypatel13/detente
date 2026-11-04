@@ -5,6 +5,7 @@ import re
 import secrets
 import sqlite3
 import time
+from dataclasses import replace
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -102,12 +103,23 @@ class Airspace:
             key = f"landed:{callsign}"
             self.put(key, sorted({*self.get(key, []), *plan.edit}))
         self._write("UPDATE flights SET landed = ? WHERE callsign = ?", time.time(), callsign)
-        self._write("DELETE FROM reports WHERE callsign = ?", callsign)
         self._write("DELETE FROM traffic WHERE a = ? OR b = ?", callsign, callsign)
+
+    def drop_report(self, callsign: str) -> None:
+        """Stop comparing this pilot's unpushed work, until its next squawk."""
+        self._write("DELETE FROM reports WHERE callsign = ?", callsign)
 
     def plans(self) -> dict[str, FlightPlan]:
         rows = self._read("SELECT callsign, plan FROM flights WHERE landed = 0")
         return {row["callsign"]: _plan_from(row["plan"]) for row in rows}
+
+    def clear_for_fix(self, callsign: str, path: str, task: str) -> None:
+        """Let the agent a person picked make the fix, even if its flight had landed."""
+        plan = self.plans().get(callsign)
+        if plan is None:
+            self.file(callsign, FlightPlan(task, (path,)))
+        elif path not in plan.edit:
+            self.file(callsign, replace(plan, edit=(*plan.edit, path)))
 
     def landed_files(self, callsign: str, unpushed: list[str]) -> list[str]:
         """Files a landed flight cleared that are still unpushed. Pushed ones need a new plan."""
@@ -266,16 +278,16 @@ class Airspace:
         crew = self.get("crew", [])
         owners = {member["callsign"]: member["owner"] for member in crew}
         flights = []
-        rows = self._read(
-            "SELECT * FROM flights WHERE landed = 0 OR landed > ? ORDER BY callsign",
-            time.time() - LANDED_SHOWN_SECONDS,
-        )
-        for row in rows:
+        shown_since = time.time() - LANDED_SHOWN_SECONDS
+        for row in self._read("SELECT * FROM flights ORDER BY callsign"):
+            # A landed flight whose unpushed work still collides is holding, not gone.
+            if row["landed"] and row["landed"] < shown_since and row["callsign"] not in held:
+                continue
             plan = _plan_from(row["plan"])
-            if row["landed"]:
-                status = "landed"
-            elif row["callsign"] in held:
+            if row["callsign"] in held:
                 status = "worried"
+            elif row["landed"]:
+                status = "landed"
             else:
                 status = "hold" if stopped else "cleared"
             flights.append(

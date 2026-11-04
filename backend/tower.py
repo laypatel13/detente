@@ -28,6 +28,11 @@ RETRY_SECONDS = 5
 BOARD = "Airspace"
 
 
+def _option(conflict: dict) -> dict:
+    """The fix a person picked."""
+    return next(item for item in conflict["options"] if item["key"] == conflict["decision"]["option"])
+
+
 class Tower:
     def __init__(
         self, airspace: Airspace, switch: Switch, room_id: str, link: type[RoomLink] = RoomLink
@@ -120,11 +125,11 @@ class Tower:
             if plan:
                 await self._clear(sender, plan)
             elif landed:
+                if waiting := self._unfinished_conflict(sender):
+                    await self._reply(sender, waiting)
+                    return
+                # The work is still unpushed, so its report keeps colliding until it changes.
                 self.airspace.land(sender)
-                await self._sync_conflicts(
-                    check_code(self.airspace.reports()),
-                    f"{sender} landed without a fix, so check this before merging",
-                )
                 await self._update_board()
             elif GROUND_STOP.search(body):
                 await self._ground_stop(sender, True)
@@ -132,6 +137,17 @@ class Tower:
                 await self._ground_stop(sender, False)
             elif command := LAND.search(body):
                 await self._land_for(sender, command.group(1))
+
+    def _unfinished_conflict(self, callsign: str) -> str | None:
+        """Why this flight can't land yet: a person hasn't picked, or it's the one fixing."""
+        for conflict in self.airspace.conflicts("open", "decided"):
+            if callsign not in (conflict["changed_by"], conflict["caller"]):
+                continue
+            if conflict["status"] == "open":
+                return f"Holding for {conflict['id']}. Land after a person picks the fix there."
+            if _option(conflict)["agent"] == callsign:
+                return f"You're fixing {conflict['id']}. Land once the code fits again."
+        return None
 
     async def _reply(self, sender: str, text: str) -> None:
         await self.room.call("send_targeted_message", body=text, target_names=[sender])
@@ -161,14 +177,15 @@ class Tower:
         await self._update_board()
 
     async def _land_for(self, sender: str, callsign: str) -> None:
-        """Clear a flight whose agent died, so its files stop blocking everyone else."""
+        """Land a flight for its agent and stop comparing its work, so it stops blocking anyone."""
         if not await self._is_person(self.room, sender):
             await self._reply(sender, "Only a person can land another agent's flight.")
             return
-        if callsign not in self.airspace.plans():
+        if callsign not in self.airspace.plans() and callsign not in self.airspace.reports():
             await self._reply(sender, f"{callsign} has no flight to land.")
             return
         self.airspace.land(callsign)
+        self.airspace.drop_report(callsign)
         await self._say(self.room, TOWER_ROOM, "LANDED", f"{callsign}, by {sender}.")
         await self._sync_conflicts(
             check_code(self.airspace.reports()),
@@ -294,7 +311,7 @@ class Tower:
 
     def _decision_card(self, collision: Collision, people: list[str]) -> str:
         names = " or ".join(people) or "A person"
-        lines = [f"{names}, reply A or B"]
+        lines = [f"{names}, pick a fix: reply with just A or B"]
         lines += [
             f"{option['key']}  {option['text']}  ({option['agent']} edits)"
             for option in collision["options"]
@@ -330,6 +347,10 @@ class Tower:
     async def _decide(self, conflict: dict, link: RoomLink, person: str, key: str) -> None:
         option = next(item for item in conflict["options"] if item["key"] == key)
         self.airspace.decide(conflict["id"], person, key)
+        # The fixer may have landed already. Without this its gate refuses the very fix
+        # it was picked for, it undoes it, and the collision opens again.
+        fix_file = option.get("file") or conflict["breaks"]["file"]
+        self.airspace.clear_for_fix(option["agent"], fix_file, f"Fix for {conflict['id']}")
         pilots = (conflict["changed_by"], conflict["caller"])
         await self._say(
             link,
@@ -342,7 +363,7 @@ class Tower:
             self.room,
             TOWER_ROOM,
             "CLEARED",
-            f"{' and '.join(pilots)} after {conflict['id']}. {option['agent']} fixes it.",
+            f"{' and '.join(pilots)} after {conflict['id']}. {option['agent']} fixes it in {fix_file}.",
             to=pilots,
         )
         await self._update_board()

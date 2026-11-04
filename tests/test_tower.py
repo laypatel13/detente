@@ -226,9 +226,62 @@ def test_an_agent_cannot_land_another_flight(tower):
     assert "lay-claude" in tower.airspace.plans()
 
 
-def test_landing_a_flight_clears_the_collision_it_caused(tower):
+def test_landed_but_unpushed_work_still_collides(tower):
+    message(tower, "lay-claude", PLAN_A)
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
+    message(tower, "lay-claude", "LANDED")
+    # Agents land seconds after editing. The break shows up when the old call is written later.
+    message(tower, "a-codex", PLAN_B)
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
+    assert len(tower.airspace.conflicts("open")) == 1
+
+
+def test_an_agent_cannot_land_while_a_person_decides(tower):
+    collide(tower)
+    message(tower, "a-codex", "LANDED")
+    assert "a-codex" in tower.airspace.plans()
+    assert "Holding for" in said()
+
+
+def test_the_picked_fixer_cannot_land_before_the_fix(tower):
+    collide(tower)
+    conflict_message(tower, "lay", "B")
+    message(tower, "a-codex", "LANDED", "fixer")
+    message(tower, "lay-claude", "LANDED", "other")
+    assert list(tower.airspace.plans()) == ["a-codex"]
+    assert "You're fixing" in said()
+
+
+def test_a_fixer_that_landed_is_cleared_for_its_fix(tower):
+    # In the first real run the fixer had landed, so its gate refused the fix it was
+    # picked for, it undid it, and the collision opened a new room every round.
+    message(tower, "lay-claude", PLAN_A)
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
+    message(tower, "lay-claude", "LANDED")
+    message(tower, "a-codex", PLAN_B)
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
+    tower.conflict_rooms["conflict-room"] = FakeLink(None, "conflict-room", None)
+    conflict_message(tower, "lay", "A")
+    assert tower.airspace.clearance("lay-claude", "auth/session.py") is None
+    assert "lay-claude fixes it in auth/session.py" in said()
+
+
+def test_a_landed_flight_in_a_collision_stays_on_the_radar_holding(tower, monkeypatch):
+    message(tower, "lay-claude", PLAN_A)
+    asyncio.run(tower.on_squawk("lay-claude", "lay", "Claude Code", CHANGER))
+    message(tower, "lay-claude", "LANDED")
+    message(tower, "a-codex", PLAN_B)
+    asyncio.run(tower.on_squawk("a-codex", "developer", "Codex", caller(BROKEN)))
+    later = time.time() + 120
+    monkeypatch.setattr(time, "time", lambda: later)
+    statuses = {f["callsign"]: f["status"] for f in tower.airspace.snapshot()["flights"]}
+    assert statuses == {"a-codex": "worried", "lay-claude": "worried"}
+
+
+def test_a_person_landing_a_flight_dismisses_its_collision(tower):
     collide(tower)
     message(tower, "lay-claude", "LANDED")
+    message(tower, "lay", "@detente land lay-claude")
     assert tower.airspace.conflicts("open", "decided") == []
     assert "landed without a fix" in said()
 
@@ -331,11 +384,13 @@ def test_a_landed_flight_leaves_the_radar_after_a_minute(monkeypatch):
     assert airspace.snapshot()["flights"] == []
 
 
-def test_landing_removes_a_report():
+def test_landing_keeps_a_report_until_it_is_dropped():
     airspace = Airspace(":memory:")
     airspace.file("a", FlightPlan("x", ("a.py",)))
     airspace.save_report("a", {"files": [], "changes": [], "calls": []})
     airspace.land("a")
+    assert list(airspace.reports()) == ["a"]
+    airspace.drop_report("a")
     assert airspace.reports() == {}
 
 

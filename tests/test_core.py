@@ -170,7 +170,12 @@ def test_check_code_catches_a_new_required_argument_across_files():
     assert collision["changed_by"] == "lay-claude"
     assert collision["caller"] == "a-codex"
     assert collision["breaks"]["file"] == "billing/refunds.py"
-    assert collision["options"][0] == {"key": "A", "text": "Give ttl a default", "agent": "lay-claude"}
+    assert collision["options"][0] == {
+        "key": "A",
+        "text": "Give ttl a default",
+        "agent": "lay-claude",
+        "file": "auth/session.py",
+    }
 
 
 def test_check_code_goes_quiet_when_the_caller_is_fixed():
