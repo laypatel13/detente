@@ -1,0 +1,32 @@
+# Detente and its web app. Run them next to a Switch server: `make up`.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: .env
+    environment:
+      SWITCH_URL: ${DOCKER_SWITCH_URL:-http://host.docker.internal:8000}
+      DETENTE_DB: /data/detente.db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8100:8100"
+    volumes:
+      - detente-data:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      DETENTE_API_URL: http://api:8100
+    ports:
+      - "127.0.0.1:3100:3100"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  detente-data:
