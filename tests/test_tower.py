@@ -182,6 +182,17 @@ def test_a_person_picks_and_the_holds_lift(tower, reply):
     assert tower.airspace.clearance("a-codex", "billing/refunds.py") is None
 
 
+def test_talk_after_the_pick_stays_under_the_conflicts_name(tower):
+    conflict = collide(tower)
+    conflict_message(tower, "lay", "B")
+    conflict_message(tower, "a-codex", "On it.")
+    conflict_message(tower, "lay", "A")
+    rooms = {row["room"] for row in tower.airspace._read("SELECT room FROM feed")}
+    assert "conflict-room" not in rooms and conflict["id"] in rooms
+    # The pick stands. Changing it would leave the first fixer cleared for nothing.
+    assert tower.airspace.conflicts("decided")[0]["decision"]["option"] == "B"
+
+
 def test_fixed_code_resolves_and_archives(tower):
     collide(tower)
     conflict_message(tower, "lay", "B")
@@ -217,6 +228,13 @@ def test_ground_stop_closes_gates_and_resume_opens_them(tower):
 def test_a_person_can_land_a_dead_agents_flight(tower):
     message(tower, "lay-claude", PLAN_A)
     message(tower, "lay", "@detente land lay-claude")
+    assert tower.airspace.plans() == {}
+
+
+def test_landing_takes_a_mention_as_the_callsign(tower):
+    # Mattermost's autocomplete writes the agent's name as a mention.
+    message(tower, "lay-claude", PLAN_A)
+    message(tower, "lay", "@detente land @lay-claude.")
     assert tower.airspace.plans() == {}
 
 
@@ -264,6 +282,17 @@ def test_a_fixer_that_landed_is_cleared_for_its_fix(tower):
     conflict_message(tower, "lay", "A")
     assert tower.airspace.clearance("lay-claude", "auth/session.py") is None
     assert "lay-claude fixes it in auth/session.py" in said()
+
+
+def test_a_decision_wakes_the_agents_only_in_the_conflict_room(tower):
+    # Switch runs one session per room, so telling the fixer in both rooms woke two of
+    # its sessions and both went to make the same fix.
+    collide(tower)
+    FakeLink.log = []
+    conflict_message(tower, "lay", "B")
+    targeted = [args["body"] for args in called("send_targeted_message")]
+    assert len(targeted) == 1 and "DECIDED" in targeted[0]
+    assert any("CLEARED" in args["body"] for args in called("post_message"))
 
 
 def test_a_landed_flight_in_a_collision_stays_on_the_radar_holding(tower, monkeypatch):

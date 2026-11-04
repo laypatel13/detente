@@ -182,9 +182,7 @@ class Airspace:
         return self._conflict(rows[0]) if rows else None
 
     def conflict_in_room(self, room_id: str) -> dict[str, Any] | None:
-        rows = self._read(
-            "SELECT * FROM conflicts WHERE room_id = ? AND status = 'open'", room_id
-        )
+        rows = self._read("SELECT * FROM conflicts WHERE room_id = ?", room_id)
         return self._conflict(rows[0]) if rows else None
 
     def decide(self, conflict_id: str, by: str, option: str) -> None:

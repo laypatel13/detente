@@ -22,7 +22,7 @@ OWNER_COLORS = ("lay", "a", "b", "c", "d", "e", "f", "g")  # sprite palettes, re
 DECISION = re.compile(r"(?:@\S+\s+)?([ab])\.?", re.IGNORECASE)
 GROUND_STOP = re.compile(rf"@{AGENT_NAME}\b.*\bground stop\b", re.IGNORECASE)
 RESUME = re.compile(rf"@{AGENT_NAME}\b.*\bresume\b", re.IGNORECASE)
-LAND = re.compile(rf"@{AGENT_NAME}\b.*\bland\s+(\S+)", re.IGNORECASE)
+LAND = re.compile(rf"@{AGENT_NAME}\b.*\bland\s+@?([\w-]+)", re.IGNORECASE)
 FAILURES = (SwitchError, httpx.HTTPError)
 RETRY_SECONDS = 5
 BOARD = "Airspace"
@@ -330,7 +330,7 @@ class Tower:
         if not self.airspace.record(room, sender, body, None, payload["message_id"]):
             return
         match = DECISION.fullmatch(body.strip())
-        if conflict is None or match is None:
+        if conflict is None or conflict["status"] != "open" or match is None:
             return
 
         link = self.conflict_rooms[room_id]
@@ -359,12 +359,13 @@ class Tower:
             f"by {person} ({key}): {option['text']}. {option['agent']} makes the edit.",
             to=pilots,
         )
+        # Only a record for the tower. Switch runs one session per room, so telling the
+        # fixer here too would wake a second session to make the same fix.
         await self._say(
             self.room,
             TOWER_ROOM,
             "CLEARED",
             f"{' and '.join(pilots)} after {conflict['id']}. {option['agent']} fixes it in {fix_file}.",
-            to=pilots,
         )
         await self._update_board()
 
