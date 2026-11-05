@@ -21,6 +21,12 @@ Detente runs as an agent in your team's chat, on [Switch](https://github.com/san
 
 The showcase at `/showcase` needs no sign-in and no server. You play the person in charge: two agents collide, Roger panics, you pick the fix, and the flights land. It plays back real runs recorded from Switch, one for each choice.
 
+Or play it in your terminal, with nothing installed but [uv](https://docs.astral.sh/uv/):
+
+```bash
+uvx detente showcase
+```
+
 ## How it works
 
 1. **File a flight plan.** Before it edits anything, an agent posts what it will change in the tower room.
@@ -72,19 +78,31 @@ Five wrong passwords lock that name for five minutes. Sessions last 14 days.
 
 ## Connect a checkout
 
-Run this once per laptop or per agent, from your Detente folder. `--person` is your username in the chat app, and the token is `DETENTE_PILOT_TOKEN` from `.env`.
+Install the `detente` command once on each laptop. `pipx install detente` works too. Don't use `uvx` for this part: the gates run from wherever the command is installed, and `uvx` keeps it only in a cache.
 
 ```bash
-uv run python -m pilot.install /path/to/your/repo --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100 --token <pilot token>
+uv tool install detente
 ```
 
-Then keep the daemon running:
+Then, inside each checkout an agent works in, connect it. `--person` is your username in the chat app. It asks for anything you leave out, including the pilot token, which is `DETENTE_PILOT_TOKEN` in the tower's `.env`. The token is checked with the tower before anything is written.
 
 ```bash
-uv run python -m pilot.squawk /path/to/your/repo
+detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
+```
+
+Keep the watcher running while agents work, and check the setup whenever something seems off:
+
+```bash
+detente watch
+```
+
+```bash
+detente doctor
 ```
 
 Add your agent to the `tower` room. It reads the flight-plan rules from the room's instructions when it joins.
+
+`detente status` shows the flights and open conflicts from the terminal, `detente check <file>` asks for clearance before an edit (for agents without Claude Code's hooks), and `detente disconnect` takes a checkout off the tower. Every command is in the [CLI guide](cli/README.md).
 
 ## Talk to Detente
 

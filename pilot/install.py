@@ -83,12 +83,52 @@ def main() -> None:
     args = parser.parse_args()
 
     root = args.repo.resolve()
-    config = {key: getattr(args, key) for key in ("callsign", "person", "vendor", "url", "token")}
-    (root / ".detente").write_text(json.dumps(config, indent=2) + "\n")
+    connect(root, {key: getattr(args, key) for key in CONFIG})
+    print(f"Connected {root} as {args.callsign}. Now run: python -m pilot.squawk {root}")
+
+
+CONFIG = ("callsign", "person", "vendor", "url", "token")
+
+
+def connect(root: Path, config: dict) -> None:
+    # First, so a folder that isn't a checkout fails before the token is written into it.
     ignore_locally(root)
+    (root / ".detente").write_text(json.dumps(config, indent=2) + "\n")
     install_commit_gate(root)
     install_edit_gate(root)
-    print(f"Connected {root} as {args.callsign}. Now run: python -m pilot.squawk {root}")
+
+
+def disconnect(root: Path) -> list[str]:
+    """Undo connect: the gates and the config, never anyone else's hooks. Says what it removed."""
+    removed = []
+    hook = git_path(root, "hooks/pre-commit")
+    if hook.exists() and f"# {MARKER} commit gate" in hook.read_text():
+        hook.unlink()
+        removed.append("the commit gate")
+    settings_file = root / ".claude" / "settings.local.json"
+    if settings_file.exists():
+        settings = json.loads(settings_file.read_text())
+        hooks = settings.get("hooks", {})
+        before = json.dumps(hooks)
+        for event, _matcher, mode in CLAUDE_HOOKS:
+            kept = [entry for entry in hooks.get(event, []) if not ours(entry, mode)]
+            if kept:
+                hooks[event] = kept
+            else:
+                hooks.pop(event, None)
+        if json.dumps(hooks) != before:
+            if not hooks:
+                settings.pop("hooks", None)
+            if settings:
+                settings_file.write_text(json.dumps(settings, indent=2) + "\n")
+            else:
+                settings_file.unlink()
+            removed.append("the Claude Code edit gate")
+    config = root / ".detente"
+    if config.exists():
+        config.unlink()
+        removed.append("the callsign and pilot token")
+    return removed
 
 
 if __name__ == "__main__":

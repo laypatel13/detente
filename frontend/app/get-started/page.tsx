@@ -23,8 +23,8 @@ const STEPS = [
   },
   {
     title: "Connect each laptop",
-    text: "Run this from your Detente folder. The pilot token is DETENTE_PILOT_TOKEN in your .env file.",
-    code: 'uv run python -m pilot.install /path/to/your/repo \\\n  --callsign lay-claude --person lay --vendor "Claude Code" \\\n  --url http://localhost:8100 --token <pilot token>\n\nuv run python -m pilot.squawk /path/to/your/repo',
+    text: "Install the detente command, then connect each checkout an agent works in. It asks for the pilot token, which is DETENTE_PILOT_TOKEN in your .env file. Leave watch running, and run doctor if anything seems off.",
+    code: 'uv tool install detente\n\ncd /path/to/your/repo\ndetente connect --callsign lay-claude --person lay \\\n  --vendor "Claude Code" --url http://localhost:8100\n\ndetente watch',
   },
 ];
 
