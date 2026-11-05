@@ -1,0 +1,68 @@
+# Release detente when a version tag (v0.1.1, ...) is pushed: run the tests, publish the package to
+# PyPI, and make the GitHub release with that version's notes from CHANGELOG.md and the built files.
+#
+# PyPI uses trusted publishing, so no API token is stored anywhere. One-time setup on pypi.org, in the
+# detente project's Publishing settings: add a GitHub publisher with owner laypatel13, repository
+# detente, workflow release.yml and environment pypi.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --frozen
+      - run: uv run pytest -q
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: write   # to make the GitHub release
+      id-token: write   # for PyPI trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+
+      - name: Check the tag matches the version in pyproject.toml
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::The tag is $GITHUB_REF_NAME but pyproject.toml says $version."
+            exit 1
+          fi
+
+      - name: Take this version's notes from CHANGELOG.md
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          awk -v heading="## $version" '
+            index($0, heading " ") == 1 || $0 == heading { on = 1; next }
+            /^## / { on = 0 }
+            on' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no notes under '## $version'."
+            exit 1
+          fi
+
+      - run: uv build
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true   # 0.1.0 went up by hand before this workflow existed
+
+      - name: Make the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag \
+            --title "detente ${GITHUB_REF_NAME#v}" --notes-file "$RUNNER_TEMP/notes.md"
