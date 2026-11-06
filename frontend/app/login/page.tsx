@@ -13,8 +13,8 @@ export default function LoginPage() {
         <Roger mood="watching" scale={5} />
         <h1 className="display text-5xl">Sign in to your radar</h1>
         <SignInForm />
-        <p className="text-sm leading-relaxed text-dim">
-          First time here? Accounts are made on the server, so run{" "}
+        <p className="leading-relaxed">
+          No account yet? Accounts are made on the tower machine: run{" "}
           <code className="font-mono">make user NAME=yourname</code> there.
         </p>
       </main>

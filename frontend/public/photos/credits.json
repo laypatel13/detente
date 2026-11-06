@@ -64,5 +64,29 @@
     "credit": "\"Flight control strip at Jakarta control\" by No machine-readable author provided. Fred775 assumed (based\u2026, public domain, via Wikimedia Commons",
     "notes": [],
     "saved": "2026-11-01T19:02:45.192Z"
+  },
+  {
+    "file": "frontend/public/photos/sfo-control-tower-at-night.jpg",
+    "media": "image",
+    "ref": "commons:68931097",
+    "title": "SFO Control tower, night. (28125162268)",
+    "creator": "mliu92 from San Mateo",
+    "creatorUrl": null,
+    "date": "2018-05-06",
+    "license": "CC BY-SA 2.0",
+    "licenseCode": "by-sa",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "creditRequired": true,
+    "page": "https://commons.wikimedia.org/wiki/File:SFO_Control_tower,_night._(28125162268).jpg",
+    "via": "Wikimedia Commons",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/SFO_Control_tower%2C_night._%2828125162268%29.jpg/1920px-SFO_Control_tower%2C_night._%2828125162268%29.jpg",
+    "width": 1920,
+    "height": 2560,
+    "bytes": 1486800,
+    "credit": "\"SFO Control tower, night. (28125162268)\" by mliu92 from San Mateo, CC BY-SA 2.0, via Wikimedia Commons",
+    "notes": [
+      "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+    ],
+    "saved": "2026-11-05T16:16:21.450Z"
   }
 ]

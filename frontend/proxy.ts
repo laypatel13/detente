@@ -3,7 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 // A quick first check, so nobody sees an empty app. The API is what really refuses access.
 export function proxy(request: NextRequest) {
   if (!process.env.DETENTE_API_URL) {
-    return NextResponse.redirect(new URL("/get-started", request.url));
+    // No tower behind this copy of the site, so there's no radar to sign in to. Say where it runs.
+    return NextResponse.rewrite(new URL("/no-tower", request.url));
   }
   const { pathname } = request.nextUrl;
   if (pathname !== "/login" && !request.cookies.has("detente_session")) {

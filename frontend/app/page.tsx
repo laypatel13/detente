@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SignArrow } from "@/components/sign-arrow";
 import { PUBLIC_LINKS, SiteHeader } from "@/components/site-header";
 import { Roger } from "@/components/sprite";
+import { IfTower, REPO_URL, TowerAction } from "@/components/tower";
 import { Button } from "@/components/ui/button";
 import bench from "@/lib/bench.json";
 import realMerges from "@/lib/real-merges.json";
@@ -69,32 +71,13 @@ const CREDITS = [
   },
 ];
 
-function SignArrow({ flip = false }: { flip?: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      className={`size-[1em] shrink-0 ${flip ? "-scale-x-100" : ""}`}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="7"
-      aria-hidden
-    >
-      <path d="M4 24h38M26 8l16 16-16 16" />
-    </svg>
-  );
-}
 
 export default function Home() {
   return (
     <div className="flex min-h-dvh flex-col">
       <section aria-label="Detente" className="flex min-h-svh flex-col bg-runway text-tarmac">
         <SiteHeader links={PUBLIC_LINKS}>
-          <Link
-            href="/login"
-            className="hidden text-lg font-medium underline-offset-4 hover:underline focus-visible:underline sm:inline"
-          >
-            Sign in
-          </Link>
+          <TowerAction />
         </SiteHeader>
 
         <div className="sign-array">
@@ -117,7 +100,7 @@ export default function Home() {
                 variant="outline"
                 className="hover:border-tarmac hover:bg-tarmac hover:text-runway"
               >
-                <Link href="/get-started">Set it up</Link>
+                <Link href="/get-started">Run it yourself</Link>
               </Button>
             </div>
           </div>
@@ -328,7 +311,7 @@ export default function Home() {
               </Button>
               <span className="text-lg text-dim">or</span>
               <Button asChild size="lg">
-                <Link href="/get-started">Set it up</Link>
+                <Link href="/get-started">Run it yourself</Link>
               </Button>
             </div>
             <p className="text-dim">
@@ -372,9 +355,17 @@ export default function Home() {
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="underline-offset-4 hover:underline">
-                  Sign in
-                </Link>
+                <IfTower
+                  otherwise={
+                    <a href={REPO_URL} className="underline-offset-4 hover:underline">
+                      GitHub
+                    </a>
+                  }
+                >
+                  <Link href="/login" className="underline-offset-4 hover:underline">
+                    Sign in
+                  </Link>
+                </IfTower>
               </li>
             </ul>
           </nav>
