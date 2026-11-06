@@ -65,7 +65,7 @@ make user NAME=yourname
 | Switch Gateway | http://localhost:3110 |
 | Switch's agent API | http://localhost:8110 |
 
-`make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects. To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
+`make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects. Switch can [connect to Slack, Discord or Microsoft Teams](https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps) instead of Mattermost; see [Limits](#limits). To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
 
 ### Let the team's laptops in
 
@@ -95,6 +95,8 @@ Five wrong passwords lock that name for five minutes. Sessions last 14 days.
 
 ## Connect a checkout
 
+Each laptop where an agent works needs [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console), Switch's desktop app. It runs your coding agent and puts it in the team's chat. When it asks for a server, choose **Connect to an existing server** and enter `http://localhost:8110` on the tower machine, or `http://<TOWER_ADDR>:8110` on any other laptop.
+
 Install the `detente` command once on each laptop. `pipx install detente` works too. Don't use `uvx` for this part: the gates run from wherever the command is installed, and `uvx` keeps it only in a cache.
 
 ```bash
@@ -119,7 +121,7 @@ detente watch
 detente doctor
 ```
 
-Add your agent to the `tower` room. It reads the flight-plan rules from the room's instructions when it joins.
+In Switch Console, add your agent to the `tower` room. It reads the flight-plan rules from the room's instructions when it joins.
 
 `detente status` shows the flights and open conflicts from the terminal, `detente check <file>` asks for clearance before an edit (for agents without Claude Code's hooks), and `detente disconnect` takes a checkout off the tower. Every command is in the [CLI guide](cli/README.md).
 
@@ -189,6 +191,7 @@ On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and 
 - **Shell edits are caught after they run.** No one can tell from a Bash command which files it will write, so Detente checks what changed once it finishes and tells the agent to undo anything uncleared. The squawk and the commit gate back that up.
 - **Gates fail closed.** If Detente is unreachable, edits and commits are refused.
 - **One repo, one tower room.** Multi-repo support isn't built.
+- **Tested on Mattermost only.** Detente talks to Switch, never to the chat app, so Slack, Discord and Microsoft Teams should work through Switch, but they haven't been tried. Telegram can't work fully: Switch can't create chats there, so Detente can't open conflict rooms.
 - **One pilot token per install.** Every laptop shares it, so anyone holding it can report as any callsign. Keep port 8100 on a private network.
 - **Share it over Tailscale or HTTPS.** `TOWER_ADDR` serves plain HTTP, so passwords and the pilot token cross the network as they are. Tailscale encrypts that traffic. Detente doesn't serve HTTPS itself; behind a proxy that sets `X-Forwarded-Proto`, the sign-in cookie is marked secure.
 - **People get Switch's owner-only default.** `@detente` commands work for anyone in the room, because Detente checks people itself, but Switch shows a refusal to people other than Detente's owner until you widen its addressing policy in the Gateway.

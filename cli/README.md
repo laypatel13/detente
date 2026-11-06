@@ -71,7 +71,9 @@ of your shell history (or set `DETENTE_TOKEN`).
 detente watch
 ```
 
-**3.** Add the agent to the `tower` room in Switch. It learns the flight-plan rules from the room.
+**3.** In [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console), add the
+agent to the `tower` room. Console runs the agent and connects it to the tower's Switch server, port 8110. It
+learns the flight-plan rules from the room.
 
 **4.** Check that it's all wired up:
 

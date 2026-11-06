@@ -23,7 +23,19 @@ const TOWER_STEPS: Step[] = [
   },
   {
     title: "Start it",
-    text: "This starts Switch, your team's chat, then Detente and the radar, all in Docker.",
+    text: (
+      <>
+        This starts Switch with Mattermost as your team&apos;s chat, then Detente and the radar, all
+        in Docker. Switch can{" "}
+        <a
+          href="https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps"
+          className="underline underline-offset-2"
+        >
+          use Slack, Discord or Microsoft Teams
+        </a>{" "}
+        instead, though Detente has only been tested on Mattermost.
+      </>
+    ),
     code: "make install\nmake switch-up\nmake setup\nmake up",
   },
   {
@@ -61,6 +73,23 @@ const TOWER_STEPS: Step[] = [
 // Once on each computer where a coding agent works, then once in each checkout.
 const LAPTOP_STEPS: Step[] = [
   {
+    title: "Install Switch Console",
+    text: (
+      <>
+        <a
+          href="https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console"
+          className="underline underline-offset-2"
+        >
+          Switch&apos;s desktop app
+        </a>{" "}
+        runs your coding agent and puts it in the team&apos;s chat. When it asks for a server,
+        choose Connect to an existing server and enter{" "}
+        <code className="font-mono">http://localhost:8110</code> on the tower machine, or port
+        8110 at its <code className="font-mono">TOWER_ADDR</code> from any other laptop.
+      </>
+    ),
+  },
+  {
     title: "Install the command",
     text: (
       <>
@@ -92,7 +121,7 @@ const LAPTOP_STEPS: Step[] = [
     title: "Add the agent to the tower room",
     text: (
       <>
-        In Switch, add the agent to the room called tower. It learns the flight-plan rules there.
+        In Switch Console, add the agent to the room called tower. It learns the flight-plan rules there.
         If anything seems off, run <code className="font-mono">detente doctor</code>.
       </>
     ),
@@ -164,7 +193,8 @@ export default function GetStartedPage() {
             </h1>
             <p className="max-w-[46ch] text-xl leading-relaxed">
               Detente runs on your own computers. One machine runs the tower, and each laptop gets
-              the <code className="font-mono text-[0.9em]">detente</code> command.
+              Switch Console and the <code className="font-mono text-[0.9em]">detente</code>{" "}
+              command.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="lg">
@@ -239,7 +269,7 @@ export default function GetStartedPage() {
                 Each laptop
               </h2>
               <p className="rise-2 max-w-[56ch] text-xl leading-relaxed">
-                Every computer where a coding agent works. Nobody signs in here: the{" "}
+                Every computer where a coding agent works. Nobody signs in to the radar here: the{" "}
                 <code className="font-mono text-[0.9em]">detente</code> command uses the pilot
                 token.
               </p>

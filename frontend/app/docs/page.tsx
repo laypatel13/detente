@@ -405,6 +405,7 @@ const LIMITS: { topic: string; question: string; items: ReactNode[] }[] = [
     question: "What does one install cover?",
     items: [
       "One repo, one tower room. Multi-repo support isn't built.",
+      "Tested on Mattermost only. Detente talks to Switch, never to the chat app, so Slack, Discord and Microsoft Teams should work through Switch, but they haven't been tried. Telegram can't: Switch can't create chats there, so conflict rooms can't open.",
       "One pilot token per install. Every laptop shares it, so anyone holding it can report as any callsign. Keep port 8100 on a private network.",
     ],
   },
@@ -697,7 +698,14 @@ export default function DocsPage() {
                     uv
                   </a>{" "}
                   and Node 24. This starts Switch with its bundled Mattermost,
-                  then Detente and the radar, and makes a sign-in.
+                  then Detente and the radar, and makes a sign-in. Switch can{" "}
+                  <a
+                    href="https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps"
+                    className="underline underline-offset-4"
+                  >
+                    use Slack, Discord or Microsoft Teams
+                  </a>{" "}
+                  instead, though Detente has only been tested on Mattermost.
                 </p>
                 <Code>{`git clone ${REPO_URL}\ncd detente\nmake install\nmake switch-up\nmake setup\nmake up\nmake user NAME=yourname`}</Code>
                 <h4 className="display text-3xl">
@@ -733,8 +741,20 @@ export default function DocsPage() {
               <div className="grid content-start gap-8">
                 <h3 className="rise display text-3xl">Each laptop</h3>
                 <p className="text-lg leading-relaxed">
-                  Every computer where an agent works, with Python 3.12 or
-                  newer. Install the command once.{" "}
+                  Every computer where an agent works. First,{" "}
+                  <a
+                    href="https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console"
+                    className="underline underline-offset-4"
+                  >
+                    Switch Console
+                  </a>
+                  , Switch&apos;s desktop app, runs the agent and puts it in the
+                  team&apos;s chat. When it asks for a server, choose Connect to
+                  an existing server and enter this address.
+                </p>
+                <Code>{"http://{tower}:8110"}</Code>
+                <p className="text-lg leading-relaxed">
+                  Then install the command once, with Python 3.12 or newer.{" "}
                   {mono("pipx install detente")} works too; {mono("uvx")}{" "}
                   doesn&apos;t, because the gates run from wherever the command
                   is installed.
@@ -755,7 +775,7 @@ export default function DocsPage() {
                 <p className="text-lg leading-relaxed">
                   Keep the watcher running while agents work, check the setup
                   whenever something seems off, and add the agent to the tower
-                  room in Switch, where it learns the flight-plan rules.
+                  room in Switch Console, where it learns the flight-plan rules.
                 </p>
                 <Code>{"detente watch\ndetente doctor"}</Code>
                 <p className="text-lg leading-relaxed">
