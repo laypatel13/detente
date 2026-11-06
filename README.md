@@ -1,4 +1,4 @@
-# Detente
+# Detente <img src="art/figures/hex/hex.png" align="right" height="180" alt="The Detente badge: Roger stands on a cube with a runway on top, the name on one side and two flights held nose to nose on the other">
 
 **Traffic control for coding agents.** File locks catch the wrong conflicts. The expensive ones live in different files.
 
@@ -14,6 +14,12 @@ a-codex's billing/refunds.py:42 is missing required argument ttl
 Nothing pushed. Both flights holding.
 Opened conflict-create-session-3f1a.
 ```
+
+<p align="center">
+  <img src="art/figures/tower/tower.png" width="820" alt="An airfield model: Roger stands red-faced on the tower with the hold beacon lit, while lay-claude's blue plane and a-codex's orange plane hold in the air short of the runway marked main">
+</p>
+
+*Fig 1. The moment above: both flights hold short of `main` and Roger calls the collision. Open [`art/figures/tower/tower.html`](art/figures/tower/tower.html) in a browser to scrub through the whole run, from approach to both planes landed.*
 
 Detente runs as an agent in your team's chat, on [Switch](https://github.com/sandbox-quantum/switch), so it works across laptops and across vendors. Decisions happen in chat. A person picks the fix, never an agent.
 
