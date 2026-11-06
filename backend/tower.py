@@ -122,7 +122,9 @@ class Tower:
             return
 
         landed = parse_landed(body)
-        tag = "FLIGHT PLAN" if plan else "LANDED" if landed else None
+        # A landing refused for an open conflict isn't one, so the radar mustn't show LANDED.
+        waiting = self._unfinished_conflict(sender) if landed and not plan else None
+        tag = "FLIGHT PLAN" if plan else "LANDED" if landed and not waiting else None
         if not self.airspace.record(TOWER_ROOM, sender, body, tag, message_id):
             return
 
@@ -130,7 +132,7 @@ class Tower:
             if plan:
                 await self._clear(sender, plan)
             elif landed:
-                if waiting := self._unfinished_conflict(sender):
+                if waiting:
                     await self._reply(sender, waiting)
                     return
                 # The work is still unpushed, so its report keeps colliding until it changes.

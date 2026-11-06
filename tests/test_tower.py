@@ -299,6 +299,8 @@ def test_an_agent_cannot_land_while_a_person_decides(tower):
     message(tower, "a-codex", "LANDED")
     assert "a-codex" in tower.airspace.plans()
     assert "Holding for" in said()
+    # Seen in a Console run: the refused landing showed as LANDED on the radar.
+    assert not tower.airspace._read("SELECT id FROM feed WHERE tag = 'LANDED'")
 
 
 def test_the_picked_fixer_cannot_land_before_the_fix(tower):
