@@ -912,10 +912,11 @@ export default function DocsPage() {
                 </p>
               </div>
               <div className="rise-3 flex flex-col justify-between gap-12 bg-raised p-7 lg:mt-24 lg:min-h-[34vh]">
-                <p className="display text-[clamp(3rem,6vw,6rem)]">0 of 190</p>
+                <p className="display text-[clamp(3rem,6vw,6rem)]">0 of 438</p>
                 <p className="text-lg leading-relaxed">
-                  clean merged PRs from cognee, ESP-Website and Django stopped.
-                  Git conflicted on 4, and Detente stopped all 4.
+                  clean merged PRs stopped, from NumPy, Matplotlib, pytest, pip,
+                  IPython and Django. Git conflicted on 11, and Detente stopped
+                  all 11.
                 </p>
               </div>
               <p className="pt-8 text-lg leading-relaxed lg:col-span-2">

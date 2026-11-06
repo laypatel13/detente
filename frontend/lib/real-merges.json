@@ -1,23 +1,47 @@
 {
   "projects": [
     {
-      "name": "cognee",
-      "replayed": 59,
-      "conflicted": 2,
-      "caught": 2,
-      "clean": 57,
+      "name": "NumPy",
+      "replayed": 25,
+      "conflicted": 0,
+      "caught": 0,
+      "clean": 25,
       "false_stops": 0
     },
     {
-      "name": "ESP-Website",
-      "replayed": 75,
-      "conflicted": 2,
-      "caught": 2,
-      "clean": 73,
+      "name": "Matplotlib",
+      "replayed": 83,
+      "conflicted": 0,
+      "caught": 0,
+      "clean": 83,
       "false_stops": 0
     },
     {
-      "name": "django",
+      "name": "pytest",
+      "replayed": 73,
+      "conflicted": 1,
+      "caught": 1,
+      "clean": 72,
+      "false_stops": 0
+    },
+    {
+      "name": "pip",
+      "replayed": 89,
+      "conflicted": 4,
+      "caught": 4,
+      "clean": 85,
+      "false_stops": 0
+    },
+    {
+      "name": "IPython",
+      "replayed": 119,
+      "conflicted": 6,
+      "caught": 6,
+      "clean": 113,
+      "false_stops": 0
+    },
+    {
+      "name": "Django",
       "replayed": 60,
       "conflicted": 0,
       "caught": 0,

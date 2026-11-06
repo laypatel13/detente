@@ -58,7 +58,7 @@ What the benchmarks show, all from commands in this repo (see [Benchmark](#bench
 | --- | --- | --- |
 | 564 breaks planted in Django, Flask, Requests, FastAPI and Rich | Stopped all 564, each with the exact reason | Flagged none |
 | 274 harmless changes planted in the same projects | Stopped none | Flagged none |
-| 194 real merged PRs from cognee, ESP-Website and Django | Stopped the 4 that conflict in git, and none of the 190 clean ones | Conflicted on 4 |
+| 449 real merged PRs from NumPy, Matplotlib, pytest, pip, IPython and Django, used as a test bed | Stopped the 11 that conflict in git, and none of the 438 clean ones | Conflicted on 11 |
 | 32 scenarios we wrote, 20 of them real breaks | Stopped 18 and warned on 2; stopped none of the 12 that are fine | Stopped 3 |
 
 What else has been run:
@@ -246,7 +246,7 @@ Three benchmarks, all offline, all from commands in this repo.
 | Run | What it does | Result |
 | --- | --- | --- |
 | `make bench` | 32 scenarios we wrote, on real git checkouts, in a few seconds. 20 really break. [Results](bench/results.md) | Detente stops 18 breaks from the code and warns on 2 from the flight plans. It stops none of the 12 that are fine. `git merge-tree` stops 3 breaks. File leases stop 4, and 6 of the fine ones too. |
-| `make bench-real REPOS="<clones>"` | Replays 194 merged PRs from cognee, ESP-Website and Django through the real squawk daemon: main's side on one checkout, the PR's on another. [Results](bench/real-merges.md) | git conflicted on 4 and Detente stopped all 4. Of the 190 that merged cleanly, Detente stopped none. |
+| `make bench-real REPOS="<clones>"` | Uses six well-known Python projects as a test bed for what Detente flags: NumPy, Matplotlib, pytest, pip, IPython and Django. It replays 449 of their merged PRs through the real squawk daemon, main's side on one checkout and the PR's on another. Both sides really shipped, so any stop on a clean merge is a false alarm. [Results](bench/real-merges.md) | git conflicted on 11 and Detente stopped all 11. Of the 438 that merged cleanly, Detente stopped none. |
 | `make bench-planted REPOS="<clones>"` | Plants breaks in Django, Flask, Requests, FastAPI and Rich. Laptop A changes a function another file really calls; laptop B adds a call copied from a real call site. A fixed seed picks the functions. [Results](bench/planted.md) | Detente stopped all 564 breaks, each with the exact reason, and none of the 274 harmless changes. `git merge-tree` flagged none of the breaks. |
 
 What they can't show:

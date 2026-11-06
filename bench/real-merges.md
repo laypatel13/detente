@@ -7,16 +7,19 @@ files at the same time, with at most 40 files on each side, are replayed.
 
 | Project | At commit | Replayed | git conflicted | Detente stopped those | git merged cleanly | Detente stopped those | Slowest check |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| cognee | `b32d8afc5` | 59 of the last 300 merges | 2 | 2 | 57 | 0 | 1.9s |
-| ESP-Website | `6f0d05baa` | 75 of the last 300 merges | 2 | 2 | 73 | 0 | 1.9s |
-| django | `2d9d619676` | 60 of the last 300 merges | 0 | 0 | 60 | 0 | 2.5s |
+| NumPy | `0311ff1191` | 25 of the last 300 merges | 0 | 0 | 25 | 0 | 2.8s |
+| Matplotlib | `96af845518` | 83 of the last 300 merges | 0 | 0 | 83 | 0 | 2.5s |
+| pytest | `08017d9ad` | 73 of the last 300 merges | 1 | 1 | 72 | 0 | 1.7s |
+| pip | `a4a111d06` | 89 of the last 300 merges | 4 | 4 | 85 | 0 | 1.8s |
+| IPython | `cf63afd11` | 119 of the last 300 merges | 6 | 6 | 113 | 0 | 2.2s |
+| Django | `2d9d619676` | 60 of the last 300 merges | 0 | 0 | 60 | 0 | 2.8s |
 
 Both sides of every merge here shipped together, so a stop on a clean merge is a
 false alarm unless the merge had to fix something.
 
 Detente stopped none of the clean merges.
 
-Stops by kind: same_function 1, same_lines 3.
+Stops by kind: contract 4, same_function 8, same_lines 8.
 
 This measures false alarms on code that really shipped. It can't show catches git
 misses, because breaks like that rarely survive into a project's history; the

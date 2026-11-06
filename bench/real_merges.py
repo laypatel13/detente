@@ -1,6 +1,6 @@
 """Replay real merged PRs from git history through the real squawk daemon. Offline.
 
-    make bench-real REPOS="~/code/cognee ~/code/django"
+    make bench-real REPOS="~/code/numpy ~/code/django"
 
 For each recent merge where main moved while the PR was open, one checkout holds main's
 side and one holds the PR's, both with HEAD at their merge base and the work unpushed,
