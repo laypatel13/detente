@@ -778,11 +778,18 @@ export default function DocsPage() {
                   }
                 </Code>
                 <p className="text-lg leading-relaxed">
-                  Keep the watcher running while agents work, check the setup
-                  whenever something seems off, and add the agent to the tower
-                  room in Switch Console, where it learns the flight-plan rules.
+                  Keep the watcher running while agents work, and check the
+                  setup whenever something seems off.
                 </p>
                 <Code>{"detente watch\ndetente doctor"}</Code>
+                <p className="text-lg leading-relaxed">
+                  Last, set up the agent in Switch Console. Name it exactly the
+                  callsign you gave {mono("detente connect")} and point it at
+                  this checkout&apos;s folder. Under Who can talk to your agent,
+                  add a rule for the agent {mono("detente")}: the default, you
+                  and your agents, blocks its clearances and holds. Then add it
+                  to the tower room, where it learns the flight-plan rules.
+                </p>
                 <p className="text-lg leading-relaxed">
                   {mono("connect")} keeps its {mono(".detente")} file out of
                   git. {mono("watch")} sends the paths, changed lines,

@@ -87,9 +87,13 @@ of your shell history (or set `DETENTE_TOKEN`).
 detente watch
 ```
 
-**3.** In [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console), add the
-agent to the `tower` room. Console runs the agent and connects it to the tower's Switch server, port 8110. It
-learns the flight-plan rules from the room.
+**3.** In [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console), which
+runs the agent and connects it to the tower's Switch server on port 8110, set up the agent:
+
+- Name it exactly the `--callsign` you gave `detente connect`, and point it at this checkout's folder.
+- Under **Who can talk to your agent**, add a rule for the agent `detente`. The default, you and your agents,
+  blocks Detente's clearances and holds.
+- Add it to the `tower` room. It learns the flight-plan rules there.
 
 **4.** Check that it's all wired up:
 

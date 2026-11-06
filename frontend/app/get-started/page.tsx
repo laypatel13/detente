@@ -118,11 +118,14 @@ const LAPTOP_STEPS: Step[] = [
     code: "detente watch",
   },
   {
-    title: "Add the agent to the tower room",
+    title: "Set up the agent in Switch Console",
     text: (
       <>
-        In Switch Console, add the agent to the room called tower. It learns the flight-plan rules there.
-        If anything seems off, run <code className="font-mono">detente doctor</code>.
+        Name it exactly the callsign you gave <code className="font-mono">detente connect</code>{" "}
+        and point it at this checkout&apos;s folder. Under Who can talk to your agent, add a rule
+        for the agent <code className="font-mono">detente</code>: the default blocks its clearances
+        and holds. Then add the agent to the room called tower, where it learns the flight-plan
+        rules. If anything seems off, run <code className="font-mono">detente doctor</code>.
       </>
     ),
   },
