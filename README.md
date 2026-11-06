@@ -4,7 +4,15 @@
 
 *Detente*: when rivals stop fighting.
 
+[![test](https://github.com/laypatel13/detente/actions/workflows/test.yml/badge.svg)](https://github.com/laypatel13/detente/actions/workflows/test.yml) [![PyPI](https://img.shields.io/pypi/v/detente?label=pypi&color=f2c94c)](https://pypi.org/project/detente/) ![Built on Switch 0.31.0](https://img.shields.io/badge/built%20on-Switch%200.31.0-2f6fde) ![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab) ![LLM calls in detection: 0](https://img.shields.io/badge/LLM%20calls%20in%20detection-0-6e7681) [![MIT license](https://img.shields.io/badge/license-MIT-6e7681)](LICENSE)
+
+<!-- DEMO: put the demo video link first on the line below, then the blog post, once both exist. -->
 **[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
+
+Built for [Flip the Switch](https://www.wemakedevs.org/hackathons/switch), Track 01: Best Business Workflow.
+
+<!-- DEMO: put a 10 to 15 second GIF of the collision, the A/B pick and the landing here. -->
+
 
 ### The break that file locks miss
 
@@ -53,6 +61,12 @@ What the benchmarks show, all from commands in this repo (see [Benchmark](#bench
 | 194 real merged PRs from cognee, ESP-Website and Django | Stopped the 4 that conflict in git, and none of the 190 clean ones | Conflicted on 4 |
 | 32 scenarios we wrote, 20 of them real breaks | Stopped 18 and warned on 2; stopped none of the 12 that are fine | Stopped 3 |
 
+What else has been run:
+
+- **Real agents in Switch Console.** Two Claude Code agents, each in its own checkout, flew four rounds through the tower. A person picked the fix in chat both ways, `A` once and `B` once, and once the break came from a push that was already on `main`.
+- **A crash in the middle of a collision.** `make test-crash` kills Detente while both flights hold. After the restart the hold is still in force and the person's pick still goes through. On every start, Detente reads what was said in the tower room while it was down, with Switch's `read_context`.
+- **A clean machine, on every push.** [CI](https://github.com/laypatel13/detente/actions/workflows/test.yml) runs `make test` and `make bench` on Linux from a fresh clone.
+
 Built with Python (FastAPI and the standard `ast` module), Next.js 16, Switch 0.31.0 and Mattermost. No LLM decides anything.
 
 ## How it works
@@ -93,6 +107,23 @@ Every decision above is deterministic Python. No LLM call decides a clearance.
 | `read_context` | Catches up on anything said while Detente was down. |
 
 Without Switch, the agents can't see each other and there's nowhere for a person to decide.
+
+### One collision, call by call
+
+The run from the top of this page, as it happens in chat and in [backend/tower.py](backend/tower.py).
+
+| Step | What the room sees | What Detente calls in Switch |
+| --- | --- | --- |
+| 1. Detente starts | Nothing | `assume_role` takes the exclusive `tower` role. `read_context` catches up on anything said while it was down |
+| 2. lay-claude joins `#tower` | The flight-plan rules | Room instructions, written once by `make setup` |
+| 3. lay-claude files a plan | `FLIGHT PLAN`, then `CLEARED lay-claude · auth/session.py` | Reads the room's event stream. `send_targeted_message` answers lay-claude only |
+| 4. a-codex's squawk calls the old `create_session(user)` | `COLLISION` in `#tower`, to both pilots | `send_targeted_message` to both agents |
+| 5. Conflict room opens | `#conflict-create-session-3f1a` with both people, both agents and the A or B card | `create_room` with the agents, people and instructions, then `link_rooms` both ways |
+| 6. A person replies `B` | `DECIDED by lay (B)` | `list_participants` checks the sender is a person, not an agent. `send_targeted_message` tells both agents |
+| 7. The fixer is cleared | `CLEARED lay-claude and a-codex after conflict-create-session-3f1a` | `post_message` in `#tower`, and the Airspace board is rewritten with `update_room_document` |
+| 8. The code fits again | `RESOLVED`, 0 open collisions | `archive_room` closes the conflict room |
+
+<!-- DEMO: put a screenshot of the conflict room in Mattermost here, with the decision card and the person's reply. -->
 
 ## Run it
 
@@ -173,7 +204,11 @@ On each laptop where an agent works:
    detente watch
    ```
 
-5. **Add your agent to the `tower` room** in Switch Console. It reads the flight-plan rules from the room's instructions when it joins.
+5. **Set up the agent in Switch Console** and put it in the `tower` room:
+   - **Name it exactly the `--callsign`** you gave `detente connect`. Detente knows each agent by that name.
+   - **Point it at this checkout's folder**, so its edits go through this checkout's gates.
+   - **Let `detente` talk to it.** Under **Who can talk to your agent**, add a rule for the agent `detente`. The default, you and your agents, blocks Detente's clearances and holds.
+   - **Add it to the `tower` room.** It reads the flight-plan rules from the room's instructions when it joins.
 
 Every command, with its options, is in the [CLI guide](cli/README.md).
 
@@ -220,6 +255,17 @@ What they can't show:
 - **Real merges can't show catches git misses.** Breaks like that rarely survive in a project's history; the scenarios and the planted breaks cover those.
 - **Planted breaks cover three kinds of call:** 208 to functions imported from where they're defined, 153 through a package's `__init__` (`from flask import url_for`), and 203 to methods on an object whose type the code states. The kinds of break are new required parameters, renames, deletions, functions made async and renamed keywords. Methods on objects whose type Detente can't see aren't planted; see [Limits](#limits).
 
+## Troubleshooting
+
+| What you see | What to do |
+| --- | --- |
+| Your agent never gets `CLEARED` | In Switch Console, check its name is exactly its `--callsign`, and that a rule under **Who can talk to your agent** lets `detente` talk to it. |
+| Every edit and commit is refused | The gates fail closed when the tower is unreachable. Run `detente doctor`. |
+| One file is refused as not cleared | The agent files a new flight plan that lists it. |
+| No collision ever shows up | `detente watch` has to be running in each checkout an agent works in. |
+| A teammate's laptop can't reach the tower | Set `TOWER_ADDR` in the tower's `.env` and restart. See [Let the team's laptops in](#let-the-teams-laptops-in). |
+| Switch answers a teammate's `@detente` with a refusal | Detente still acts on it. To hide the refusal, widen Detente's addressing policy in the Switch Gateway at `http://localhost:3110`. |
+
 ## Limits
 
 - **Calls are checked in Python only.** Contracts come from Python's `ast`. Other files are checked line by line, the way git would merge them, so a clash in `package.json` is caught but a broken call in TypeScript isn't.
@@ -257,9 +303,13 @@ Tools near this space include MCP Agent Mail, Dibs and Interlock (file leases fo
 | `make bench-real REPOS="~/code/some-python-project"` | Replays a project's merged PRs |
 | `make bench-planted REPOS="~/code/some-python-project"` | Plants breaks in a project |
 | `make dev` | The API and web app with reloading. Make your account with `uv run python -m backend.accounts add yourname` |
-| `make test-live` | Drives real Switch, Mattermost, git worktrees, gates and squawk daemons. Needs Switch and Detente running |
+| `make test-live` | Drives real Switch, Mattermost, git worktrees, gates and squawk daemons. Needs Switch and Detente running. Each run leaves two test agents in your `tower` room |
 | `make test-crash` | The same, and kills Detente mid-collision to prove holds survive a crash. Needs `make api`, not the Docker stack |
 | `make record` | Flies both choices on real Switch, with its own agent, room and database, and rewrites the showcase's recordings |
+
+## How this was built
+
+Built by Lay ([laypatel13](https://github.com/laypatel13)) during Flip the Switch, from the first commit on November 4, with Claude Code as a coding assistant. Every number in this README comes from a command in this repo, so you can rerun it instead of taking it on trust.
 
 ## License
 
