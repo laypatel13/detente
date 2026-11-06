@@ -1,8 +1,10 @@
-# Detente <img src="art/figures/hex/hex.png" align="right" height="180" alt="The Detente badge: Roger stands on a cube with a runway on top, the name on one side and two flights held nose to nose on the other">
+# Detente <img src="art/figures/hex/hex.png" align="right" height="180" alt="The Detente badge: a cube whose bottom half is a block with the name on it, and whose top half is a glass case where Roger watches from his riser while two flights hold nose to nose at a barrier on the runway">
 
 **Traffic control for coding agents.** File locks catch the wrong conflicts. The expensive ones live in different files.
 
 *Detente*: when rivals stop fighting.
+
+**[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
 
 Your agent changes `create_session(user)` to `create_session(user, ttl)` in `auth/session.py`. Your teammate's agent, on another laptop, is writing `billing/refunds.py`, which calls `create_session(user)`. Nobody has pushed. No lines overlap, so file locks and merge checks stay quiet until the build breaks.
 
@@ -19,19 +21,30 @@ Opened conflict-create-session-3f1a.
   <img src="art/figures/tower/tower.png" width="820" alt="An airfield model: Roger stands red-faced on the tower with the hold beacon lit, while lay-claude's blue plane and a-codex's orange plane hold in the air short of the runway marked main">
 </p>
 
-*Fig 1. The moment above: both flights hold short of `main` and Roger calls the collision. Open [`art/figures/tower/tower.html`](art/figures/tower/tower.html) in a browser to scrub through the whole run, from approach to both planes landed.*
+*Step 2 of 6 in the run: both flights hold short of `main` while Roger calls the collision. [Play all six steps](https://mydetente.vercel.app/figures/tower.html), from approach to both planes landed.*
 
 Detente runs as an agent in your team's chat, on [Switch](https://github.com/sandbox-quantum/switch), so it works across laptops and across vendors. Decisions happen in chat. A person picks the fix, never an agent.
 
-## See it first
+## For judges
 
-The showcase at `/showcase` needs no sign-in and no server. You play the person in charge: two agents collide, Roger panics, you pick the fix, and the flights land. It plays back real runs recorded from Switch, one for each choice.
+Three ways in, quickest first.
 
-Or play it in your terminal, with nothing installed but [uv](https://docs.astral.sh/uv/):
+| | What you do | What you see |
+| --- | --- | --- |
+| **Play it** | Open the [showcase](https://mydetente.vercel.app/showcase), or run `uvx detente showcase` with only [uv](https://docs.astral.sh/uv/) installed | You play the person in charge: two agents collide, Roger panics, you pick the fix and both flights land. It plays back real runs recorded from Switch, one for each choice. No sign-in, no server. |
+| **Reproduce the proof** | Clone the repo, then run `uv sync`, `make test` and `make bench` | The offline tests, and 32 collision scenarios on real git checkouts. No Docker, no API keys. |
+| **Run the real thing** | Follow [Run it](#run-it) with Docker | Switch, Mattermost, the tower and the radar, with your own agents on your own laptops. |
 
-```bash
-uvx detente showcase
-```
+What the benchmarks show, all from commands in this repo (see [Benchmark](#benchmark)):
+
+| Test | Detente | git merge-tree |
+| --- | --- | --- |
+| 564 breaks planted in Django, Flask, Requests, FastAPI and Rich | Stopped all 564, each with the exact reason | Flagged none |
+| 274 harmless changes planted in the same projects | Stopped none | Flagged none |
+| 194 real merged PRs from cognee, ESP-Website and Django | Stopped the 4 that conflict in git, and none of the 190 clean ones | Conflicted on 4 |
+| 32 scenarios we wrote, 20 of them real breaks | Stopped 18 and warned on 2; stopped none of the 12 that are fine | Stopped 3 |
+
+Built with Python (FastAPI and the standard `ast` module), Next.js 16, Switch 0.31.0 and Mattermost. No LLM decides anything.
 
 ## How it works
 
@@ -42,7 +55,35 @@ uvx detente showcase
 5. **A real break holds both flights.** Detente opens a conflict room with both people and both agents.
 6. **A person replies A or B.** The holds lift, the agent makes the fix, and Detente archives the room once the code fits again.
 
+```mermaid
+flowchart LR
+  subgraph laptop["Each laptop"]
+    agent["Coding agent"]
+    watch["detente watch and gates"]
+  end
+  watch -->|what its unpushed code changes and calls| tower["Detente, the tower"]
+  agent <-->|flight plans, clearances, holds| sw["Switch"]
+  tower <--> sw
+  sw <--> chat["Team chat, where a person picks A or B"]
+```
+
 Every decision above is deterministic Python. No LLM call decides a clearance.
+
+## How it uses Switch
+
+| Switch feature | What Detente does with it |
+| --- | --- |
+| Rooms across laptops and vendors | Every pilot sees the tower room. This is how agents on different machines see each other. |
+| Agent protocol | Detente is a custom always-on agent: one event stream per room, HTTP operations out. See [backend/switch.py](backend/switch.py). |
+| `send_targeted_message` | Addresses clearances, holds and decisions to the exact pilots involved. |
+| `create_room`, `link_rooms` | Opens a conflict room with both people and both agents, linked to the tower room both ways. |
+| `archive_room` | Archives a conflict room when it's resolved. |
+| Room documents | Keeps the live Airspace board. Read it with `!list-documents`. |
+| Room instructions | Teaches every pilot the flight-plan rules when it joins. |
+| Exclusive role | Detente holds the `tower` role, so there's only ever one controller. |
+| `read_context` | Catches up on anything said while Detente was down. |
+
+Without Switch, the agents can't see each other and there's nowhere for a person to decide.
 
 ## Run it
 
@@ -151,22 +192,6 @@ They share the radar and conflict screens, and nothing else.
 
 `make test` fails if the real app imports showcase code, if anything the showcase uses calls a server, or if `backend/` or `pilot/` mention the showcase. To host the public website, run the web app without `DETENTE_API_URL`: the landing page and showcase work, and `/radar` sends people to the setup page.
 
-## How it uses Switch
-
-| Switch feature | What Detente does with it |
-| --- | --- |
-| Rooms across laptops and vendors | Every pilot sees the tower room. This is how agents on different machines see each other. |
-| Agent protocol | Detente is a custom always-on agent: one event stream per room, HTTP operations out. See [backend/switch.py](backend/switch.py). |
-| `send_targeted_message` | Addresses clearances, holds and decisions to the exact pilots involved. |
-| `create_room`, `link_rooms` | Opens a conflict room with both people and both agents, linked to the tower room both ways. |
-| `archive_room` | Archives a conflict room when it's resolved. |
-| Room documents | Keeps the live Airspace board. Read it with `!list-documents`. |
-| Room instructions | Teaches every pilot the flight-plan rules when it joins. |
-| Exclusive role | Detente holds the `tower` role, so there's only ever one controller. |
-| `read_context` | Catches up on anything said while Detente was down. |
-
-Without Switch, the agents can't see each other and there's nowhere for a person to decide.
-
 ## Benchmark
 
 `make bench` runs 32 scenarios on real git checkouts in a few seconds, offline. See [bench/results.md](bench/results.md).
@@ -200,6 +225,13 @@ On Django, Flask, Requests, FastAPI and Rich, Detente stopped all 564 planted br
 - **Share it over Tailscale or HTTPS.** `TOWER_ADDR` serves plain HTTP, so passwords and the pilot token cross the network as they are. Tailscale encrypts that traffic. Detente doesn't serve HTTPS itself; behind a proxy that sets `X-Forwarded-Proto`, the sign-in cookie is marked secure.
 - **People get Switch's owner-only default.** `@detente` commands work for anyone in the room, because Detente checks people itself, but Switch shows a refusal to people other than Detente's owner until you widen its addressing policy in the Gateway.
 
+## What's next
+
+- Contracts for TypeScript, so a broken call in a `.ts` file is caught, not only a line clash.
+- One tower for several repos.
+- A pilot token per laptop, so one callsign can't report as another.
+- Trying Slack, Discord and Microsoft Teams through Switch.
+
 ## Prior art
 
 Tools near this space include MCP Agent Mail, Dibs and Interlock (file leases for agents), GitLive, Sturdy and Deconflict (pre-push conflict detection for people), and newer agent coordinators such as Clash, Regente, Braidkeep, Shepherd and Wit. Detente's bet is contract collisions between different files, on different laptops, decided by a person in team chat.
@@ -220,3 +252,7 @@ make record
 `make test` runs offline. `make test-live` drives real Switch, Mattermost, git worktrees, gates and squawk daemons, and needs Switch and Detente running first. `make test-crash` does the same and kills Detente mid-collision to prove holds survive a crash. It needs `make api`, not the Docker stack. `make record` flies both choices on real Switch, with its own agent, room and database, and rewrites the showcase's recordings.
 
 With `make dev`, make your account with `uv run python -m backend.accounts add yourname`.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
