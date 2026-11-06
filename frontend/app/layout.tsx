@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 // taste-skill-ignore: the mono face is for code and real command output only
-import { Barlow, Barlow_Condensed, Overpass_Mono } from "next/font/google"; // taste-skill-ignore
+import { Barlow, Barlow_Condensed, Geist_Mono } from "next/font/google"; // taste-skill-ignore
 import "./globals.css";
 
 const barlow = Barlow({
@@ -15,10 +15,9 @@ const barlowCondensed = Barlow_Condensed({
   weight: ["600", "700", "800"],
 });
 
-const overpassMono = Overpass_Mono({ // taste-skill-ignore
-  variable: "--font-overpass-mono",
+const geistMono = Geist_Mono({ // taste-skill-ignore
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`dark ${barlow.variable} ${barlowCondensed.variable} ${overpassMono.variable} h-full antialiased`}
+      className={`dark ${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

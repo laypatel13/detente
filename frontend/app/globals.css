@@ -38,7 +38,7 @@
   --font-sans: var(--font-barlow);
   --font-display: var(--font-barlow-condensed);
   /* taste-skill-ignore: code and real command output only */
-  --font-mono: var(--font-overpass-mono); /* taste-skill-ignore */
+  --font-mono: var(--font-geist-mono); /* taste-skill-ignore */
   --font-heading: var(--font-barlow-condensed);
 
   /* One corner radius everywhere. */

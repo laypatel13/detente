@@ -251,7 +251,7 @@ export default function GetStartedPage() {
               <Image
                 src="/cli/home.png"
                 alt="detente in a connected checkout: Roger, lay-claude on its checkout, the latest from the tower, and the six commands you'll use most"
-                width={2084}
+                width={2050}
                 height={928}
                 sizes="(min-width: 1024px) 48vw, 100vw"
                 className="h-auto w-full"
@@ -265,7 +265,7 @@ export default function GetStartedPage() {
               <Image
                 src="/cli/doctor.png"
                 alt="detente doctor with every check passed: Python, git, the checkout, connected as lay-claude, the commit gate, the Claude Code edit gate and the tower"
-                width={2084}
+                width={2050}
                 height={440}
                 sizes="(min-width: 1024px) 48vw, 100vw"
                 className="h-auto w-full"
@@ -305,7 +305,7 @@ export default function GetStartedPage() {
             <Image
               src="/cli/conflict.png"
               alt="detente conflict in a terminal: total_due gained a currency argument, statement.py still calls it the old way, fixes A and B, and the pick"
-              width={2182}
+              width={2146}
               height={684}
               sizes="(min-width: 1024px) 55vw, 100vw"
               className="h-auto w-full"
