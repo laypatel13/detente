@@ -306,7 +306,12 @@ const glow = part("glow");
 const readout = document.querySelector("[data-readout]");
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const HOLD_POSE = 5.6;
-let clock = still.matches ? HOLD_POSE : 0, touring = !still.matches, visible = false, frame = 0, last = 0, idle = 0, target = clock;
+let clock = still.matches ? HOLD_POSE : 0, touring = !still.matches, visible = false, frame = 0, last = 0, target = clock;
+const scrub = document.querySelector(".tw-scrub");
+const playButton = document.querySelector('[data-act="play"]');
+const stepButtons = [...document.querySelectorAll("[data-step]")];
+const END = LOOP - 0.7;
+const stepAt = (time) => STEPS.reduce((best, step, index) => (step <= time + 0.01 ? index : best), 0);
 // A link can open the figure at one moment, e.g. tower.html#t=10.
 const pinned = /t=([0-9.]+)/.exec(location.hash);
 if (pinned) { clock = target = Math.min(LOOP, +pinned[1]); touring = false; }
@@ -330,9 +335,16 @@ function draw() {
   beaconLight.classList.toggle("is-hold", s.beacon);
   glow.style.opacity = s.beacon ? "1" : "0";
   if (readout.textContent !== s.readout) readout.textContent = s.readout;
-  stage.setAttribute("aria-valuenow", clock.toFixed(1));
-  stage.setAttribute("aria-valuetext", s.readout);
+  scrub.value = Math.min(END, s.t).toFixed(2);
+  scrub.style.setProperty("--p", (Math.min(END, s.t) / END * 100).toFixed(2) + "%");
+  scrub.setAttribute("aria-valuetext", s.readout);
+  const here = stepAt(s.t);
+  stepButtons.forEach((button, index) => button.toggleAttribute("aria-current", index === here));
 }
+const showPlaying = () => {
+  playButton.textContent = touring ? "Pause" : "Play";
+  playButton.setAttribute("aria-label", touring ? "Pause the run" : "Play the run");
+};
 function tick(now) {
   const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
   last = now;
@@ -344,29 +356,61 @@ function tick(now) {
   frame = visible && !settled ? requestAnimationFrame(tick) : 0;
 }
 const run = () => { if (!frame && visible) { last = 0; frame = requestAnimationFrame(tick); } };
+// Any touch of the controls pauses the run where the person put it, until they press Play.
 const steer = (to) => {
   touring = false;
-  target = Math.min(LOOP - 0.7, Math.max(0, to));
-  clearTimeout(idle);
-  idle = setTimeout(() => { touring = !still.matches; run(); }, 3600);
+  target = Math.min(END, Math.max(0, to));
+  showPlaying();
   run();
 };
+const step = (by) => steer(STEPS[Math.min(STEPS.length - 1, Math.max(0, stepAt(target) + by))] + 0.3);
 new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; if (visible) run(); }, { rootMargin: "120px 0px" }).observe(stage);
+// Tap or click the drawing for the next step; drag across it to scrub. Vertical swipes still scroll.
+let press = null;
+stage.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  press = { x: event.clientX, from: touring ? clock : target, dragging: false };
+});
 stage.addEventListener("pointermove", (event) => {
-  const box = svg.getBoundingClientRect();
-  steer(Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)) * (LOOP - 0.7));
+  if (!press) return;
+  const dx = event.clientX - press.x;
+  if (!press.dragging && Math.abs(dx) > 8) { press.dragging = true; stage.setPointerCapture(event.pointerId); stage.classList.add("is-dragging"); }
+  if (press.dragging) steer(press.from + (dx / svg.getBoundingClientRect().width) * END);
+});
+const release = (event) => {
+  if (!press) return;
+  if (!press.dragging && event.type === "pointerup") {
+    if (target >= STEPS[STEPS.length - 1] && !touring) steer(0); else { if (touring) target = clock; step(1); }
+  }
+  press = null;
+  stage.classList.remove("is-dragging");
+};
+stage.addEventListener("pointerup", release);
+stage.addEventListener("pointercancel", release);
+scrub.addEventListener("input", () => steer(+scrub.value));
+stepButtons.forEach((button) => button.addEventListener("click", () => steer(STEPS[+button.dataset.step] + 0.3)));
+document.querySelector('[data-act="back"]').addEventListener("click", () => { if (touring) target = clock; step(-1); });
+document.querySelector('[data-act="next"]').addEventListener("click", () => { if (touring) target = clock; step(1); });
+playButton.addEventListener("click", () => {
+  touring = !touring;
+  if (touring && target >= END - 0.05) clock = 0;
+  if (!touring) target = clock;
+  showPlaying();
+  run();
 });
 stage.addEventListener("keydown", (event) => {
-  const here = STEPS.reduce((best, step, index) => (step <= target + 0.01 ? index : best), 0);
   let to = null;
-  if (event.key === "ArrowRight" || event.key === "ArrowUp") to = STEPS[Math.min(STEPS.length - 1, here + 1)] + 0.3;
-  if (event.key === "ArrowLeft" || event.key === "ArrowDown") to = STEPS[Math.max(0, here - 1)] + 0.3;
+  if (event.key === "ArrowRight" || event.key === "ArrowUp") to = STEPS[Math.min(STEPS.length - 1, stepAt(target) + 1)] + 0.3;
+  if (event.key === "ArrowLeft" || event.key === "ArrowDown") to = STEPS[Math.max(0, stepAt(target) - 1)] + 0.3;
   if (event.key === "Home") to = 0;
   if (event.key === "End") to = STEPS[STEPS.length - 1] + 1.6;
+  if (event.key === " " || event.key === "Enter") { event.preventDefault(); playButton.click(); return; }
   if (to === null) return;
   event.preventDefault();
+  if (touring) target = clock;
   steer(to);
 });
+showPlaying();
 draw();
 `;
 
@@ -381,12 +425,45 @@ const CSS = `
 .iso-solid.is-hold>.iso-edge{stroke:#ff8f8f}
 .is-still body{background:transparent}.is-still .iso-page{margin:0;width:820px}.is-still .iso-legend,.is-still [data-corner="hint"]{display:none}
 .iso{--anatomy-mono:"Geist Mono",ui-monospace,Menlo,monospace}
+.iso-stage{cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.iso-stage.is-dragging{cursor:grabbing}
+.iso-stage:focus-visible,.tw-controls button:focus-visible,.tw-scrub:focus-visible{outline:2px solid var(--anatomy-strong);outline-offset:3px}
+.tw-controls{display:grid;gap:14px;margin-top:28px;font-family:var(--anatomy-mono)}
+.tw-row{display:flex;gap:8px;align-items:center}
+.tw-controls button{min-height:44px;padding:0 16px;border:0;border-radius:0;background:var(--anatomy-face);color:var(--anatomy-strong);font:inherit;font-size:13px;cursor:pointer;box-shadow:0 0 0 1px var(--anatomy-lo);touch-action:manipulation;transition:background-color .15s,color .15s}
+.tw-controls button:hover{background:var(--anatomy-lit-top)}
+.tw-controls button:active{transform:translateY(1px)}
+.tw-controls [data-act="play"]{min-width:84px;background:var(--anatomy-strong);color:var(--anatomy-card);box-shadow:none}
+.tw-controls [data-act="play"]:hover{background:var(--anatomy-lit)}
+.tw-scrub{flex:1;min-width:0;height:44px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.tw-scrub::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--anatomy-strong) var(--p,0%),var(--anatomy-lo) var(--p,0%))}
+.tw-scrub::-moz-range-track{height:4px;background:linear-gradient(90deg,var(--anatomy-strong) var(--p,0%),var(--anatomy-lo) var(--p,0%))}
+.tw-scrub::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-9px;border-radius:50%;background:var(--anatomy-strong);box-shadow:0 0 0 4px var(--anatomy-card)}
+.tw-scrub::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:var(--anatomy-strong);box-shadow:0 0 0 4px var(--anatomy-card)}
+.tw-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:0;padding:0;list-style:none}
+.tw-steps li{display:flex}.tw-steps button{width:100%;height:100%;padding:8px 8px;text-align:left;line-height:1.3;color:var(--anatomy-text)}
+.tw-steps button span{display:block;color:var(--anatomy-muted);font-size:11px}
+.tw-steps button[aria-current]{background:var(--anatomy-strong);color:var(--anatomy-card);box-shadow:none}
+.tw-steps button[aria-current] span{color:inherit;opacity:.7}
+.tw-steps li:nth-child(2) button[aria-current]{background:#ff2b3f;color:#fff}
+@media (max-width:640px){.iso-plate{padding:44px 12px 64px}.tw-steps{grid-template-columns:repeat(3,1fr)}.tw-row .tw-skip{display:none}}
+.is-still .tw-controls{display:none}
 `;
+
+// The run's six moments, in order, matching STEPS in model.mjs.
+const STEP_NAMES = ["In the air", "Collision", "You pick B", "lay-claude lands", "a-codex fixes", "Both landed"];
+function controls() {
+  const steps = STEP_NAMES.map((name, index) => `<li><button type="button" data-step="${index}"><span>${index + 1}</span>${name}</button></li>`).join("");
+  return `<div class="tw-controls">
+<div class="tw-row"><button type="button" data-act="play">Pause</button><button type="button" class="tw-skip" data-act="back" aria-label="Previous step">Back</button><input class="tw-scrub" type="range" min="0" max="${LOOP - 0.7}" step="0.01" value="0" aria-label="Scrub through the run"><button type="button" class="tw-skip" data-act="next" aria-label="Next step">Next</button></div>
+<ol class="tw-steps" aria-label="Jump to a moment">${steps}</ol>
+</div>`;
+}
 
 const body = k.plateHtml({
   fig: "Fig 1",
   title: "The tower",
-  hint: "Move across to scrub, arrows to step",
+  hint: "Tap for the next step, drag to scrub",
   readout: first.readout,
   keys: [
     { mark: "lit", label: "The hold beacon: lit while Detente holds both flights" },
@@ -394,7 +471,7 @@ const body = k.plateHtml({
   ],
   caption:
     "Two agents are in the air with unpushed work, heading for one runway: main. lay-claude changed create_session(user) to create_session(user, ttl); a-codex still calls it the old way. No lines overlap, yet Detente holds both before either lands. You pick B: lay-claude lands as it is, a-codex updates its call and lands after.",
-  body: `<div class="iso-stage" tabindex="0" role="slider" aria-label="The tower: arrow keys step through the run" aria-valuemin="0" aria-valuemax="${LOOP}" aria-valuenow="0">${svg}</div>`,
+  body: `<div class="iso-stage" tabindex="0" role="group" aria-label="The tower. Tap or press the right arrow for the next step, drag to scrub, space to play or pause.">${svg}</div>${controls()}`,
 });
 
 const page = k.pageHtml({ title: "The tower", theme: "dark", body, script: kitScript() + live, width: 820 }).replace("</style>", `${CSS}</style>`);

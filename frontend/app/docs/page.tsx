@@ -601,24 +601,30 @@ export default function DocsPage() {
 
             <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
               <figure className="rise m-0 grid content-start gap-3 lg:col-span-6">
-                <Image
-                  src="/figures/tower.png"
-                  alt="An airfield model: Roger stands red-faced on the tower with the hold beacon lit, while lay-claude's blue plane and a-codex's orange plane hold in the air short of the runway marked main"
-                  width={1640}
-                  height={1049}
-                  sizes="(min-width: 1024px) 48vw, 100vw"
-                  className="h-auto w-full"
-                />
+                <a
+                  href="/figures/tower.html"
+                  className="group relative block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-runway"
+                >
+                  <Image
+                    src="/figures/tower.png"
+                    alt="An airfield model: Roger stands red-faced on the tower with the hold beacon lit, while lay-claude's blue plane and a-codex's orange plane hold in the air short of the runway marked main"
+                    width={1640}
+                    height={1049}
+                    sizes="(min-width: 1024px) 48vw, 100vw"
+                    className="h-auto w-full transition-opacity group-hover:opacity-85"
+                  />
+                  <span className="absolute bottom-3 left-3 inline-flex min-h-11 items-center gap-2 bg-runway px-4 text-base font-medium text-tarmac transition-colors group-hover:bg-paint">
+                    <svg aria-hidden="true" viewBox="0 0 12 12" className="size-3 fill-current">
+                      <path d="M2 1l9 5-9 5z" />
+                    </svg>
+                    Play the run
+                  </span>
+                </a>
                 <figcaption className="text-base leading-relaxed">
                   Both flights hold short of main while Roger calls the
-                  collision.{" "}
-                  <a
-                    href="/figures/tower.html"
-                    className="underline underline-offset-4 hover:text-runway"
-                  >
-                    Scrub through the whole run
-                  </a>
-                  , from approach to both planes landed.
+                  collision. Tap the picture to play the whole run, from
+                  approach to both planes landed, and step through it at your
+                  own pace.
                 </figcaption>
               </figure>
               <div className="rise-2 grid content-start gap-6 lg:col-span-6 lg:col-start-7">
