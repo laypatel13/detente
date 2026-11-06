@@ -1,12 +1,16 @@
 # Detente <img src="art/figures/hex/hex.png" align="right" height="180" alt="The Detente badge: a cube whose bottom half is a block with the name on it, and whose top half is a glass case where Roger watches from his riser while two flights hold nose to nose at a barrier on the runway">
 
-**Traffic control for coding agents.** File locks catch the wrong conflicts. The expensive ones live in different files.
+**Traffic control for coding agents.** Detente catches the moment one agent's change breaks code another agent is writing on another laptop, before anyone pushes.
 
 *Detente*: when rivals stop fighting.
 
 **[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
 
-Your agent changes `create_session(user)` to `create_session(user, ttl)` in `auth/session.py`. Your teammate's agent, on another laptop, is writing `billing/refunds.py`, which calls `create_session(user)`. Nobody has pushed. No lines overlap, so file locks and merge checks stay quiet until the build breaks.
+### The break that file locks miss
+
+- **Your agent** changes `create_session(user)` to `create_session(user, ttl)` in `auth/session.py`.
+- **Your teammate's agent**, on another laptop, writes `billing/refunds.py`, which calls `create_session(user)`.
+- **Different files, no shared lines, nothing pushed.** File locks and merge checks stay quiet until the build breaks.
 
 Detente catches it before either of you pushes:
 
@@ -23,7 +27,12 @@ Opened conflict-create-session-3f1a.
 
 *Step 2 of 6 in the run: both flights hold short of `main` while Roger calls the collision. [Play all six steps](https://mydetente.vercel.app/figures/tower.html), from approach to both planes landed.*
 
-Detente runs as an agent in your team's chat, on [Switch](https://github.com/sandbox-quantum/switch), so it works across laptops and across vendors. Decisions happen in chat. A person picks the fix, never an agent.
+### Why it's different
+
+- **Across laptops and vendors.** Detente runs as an agent in your team's chat, on [Switch](https://github.com/sandbox-quantum/switch), so Claude Code on one laptop and Codex on another see each other.
+- **It reads the code, not just the file names.** It compares the signatures each laptop changed with the calls each laptop makes, using Python's `ast`.
+- **A person decides.** Both flights hold until someone replies `A` or `B` in chat. Never an agent.
+- **No LLM decides anything.** Every clearance and every collision is deterministic Python.
 
 ## For judges
 
@@ -48,12 +57,12 @@ Built with Python (FastAPI and the standard `ast` module), Next.js 16, Switch 0.
 
 ## How it works
 
-1. **File a flight plan.** Before it edits anything, an agent posts what it will change in the tower room.
-2. **Get cleared, or hear about traffic.** Detente clears the plan and warns when it overlaps someone else's.
-3. **Gates enforce the clearance.** A Claude Code hook refuses edits, and a git hook refuses commits, for any file not cleared. Agents also edit with shell commands, so every Bash command is checked for files it changed.
-4. **Squawks report the real code.** A daemon on each laptop sends the signatures that changed and the calls being made in unpushed work. Detente compares them across laptops with Python's `ast`. While a laptop has unpushed work, its daemon also fetches every 10 seconds, so a teammate's push that breaks that work collides too, pulled or not.
+1. **File a flight plan.** Before editing, an agent posts what it will change in the tower room.
+2. **Get cleared, or hear about traffic.** Detente clears the plan, and warns when it overlaps someone else's.
+3. **Gates enforce the clearance.** A Claude Code hook refuses edits and a git hook refuses commits to any file not cleared. Shell commands are checked for the files they changed.
+4. **Squawks report the real code.** `detente watch` on each laptop sends the signatures its unpushed work changed and the calls it makes. It also fetches every 10 seconds, so a teammate's push that breaks this work collides too.
 5. **A real break holds both flights.** Detente opens a conflict room with both people and both agents.
-6. **A person replies A or B.** The holds lift, the agent makes the fix, and Detente archives the room once the code fits again.
+6. **A person replies A or B.** The holds lift, the agent makes the fix, and the room is archived once the code fits again.
 
 ```mermaid
 flowchart LR
@@ -106,24 +115,31 @@ make user NAME=yourname
 | Switch Gateway | http://localhost:3110 |
 | Switch's agent API | http://localhost:8110 |
 
-`make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects. Switch can [connect to Slack, Discord or Microsoft Teams](https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps) instead of Mattermost; see [Limits](#limits). To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
+- **`make switch-up`** runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`.
+- **Other ports.** Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects.
+- **Already have a Switch server?** Skip `make switch-up` and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
+- **Another chat app.** Switch can [connect to Slack, Discord or Microsoft Teams](https://docs.switchagents.ai/switch-rooms/deploy/messaging-apps) instead of Mattermost; see [Limits](#limits).
 
 ### Let the team's laptops in
 
-Every address above answers on this machine only. When agents work on other laptops, add this machine's IP address on your team's private network, such as its [Tailscale](https://tailscale.com) address, to `.env` and restart:
+Every address above answers on this machine only. For agents on other laptops, add this machine's address on your team's private network, such as its [Tailscale](https://tailscale.com) address, to `.env` and restart:
 
 ```bash
 echo "TOWER_ADDR=100.101.102.103" >> .env
 make switch-up up
 ```
 
-The radar, the chat, Switch and Detente's API then answer at that address too, on the same ports. Teammates use it in place of `localhost`. Switch's database stays on this machine.
+The radar, the chat, Switch and Detente's API then answer at that address too, on the same ports. Teammates use it in place of `localhost`.
 
 ## Sign in
 
-Nobody can sign up through the website. Accounts are made on the server, and `make user NAME=yourname` asks for a password of at least 12 characters. Run it once for each teammate.
+- **No sign-up page.** Accounts are made on the server: `make user NAME=yourname`, once for each teammate. It asks for a password of at least 12 characters.
+- **Five wrong passwords** lock that name for five minutes. Sessions last 14 days.
 
-To manage accounts, run these inside the API container with `docker compose -p detente exec api .venv/bin/python -m backend.accounts`, followed by:
+<details>
+<summary>Manage accounts</summary>
+
+Run these inside the API container with `docker compose -p detente exec api .venv/bin/python -m backend.accounts`, followed by:
 
 | Command | What it does |
 | --- | --- |
@@ -132,39 +148,34 @@ To manage accounts, run these inside the API container with `docker compose -p d
 | `remove <name>` | Removes the account and ends its sessions at once |
 | `list` | Lists accounts |
 
-Five wrong passwords lock that name for five minutes. Sessions last 14 days.
+</details>
 
 ## Connect a checkout
 
-Each laptop where an agent works needs [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console), Switch's desktop app. It runs your coding agent and puts it in the team's chat. When it asks for a server, choose **Connect to an existing server** and enter `http://localhost:8110` on the tower machine, or `http://<TOWER_ADDR>:8110` on any other laptop.
+On each laptop where an agent works:
 
-Install the `detente` command once on each laptop. `pipx install detente` works too. Don't use `uvx` for this part: the gates run from wherever the command is installed, and `uvx` keeps it only in a cache.
+1. **Install [Switch Console](https://docs.switchagents.ai/switch-rooms/getting-started/install-switch-console)**, Switch's desktop app. It runs your coding agent and puts it in the team's chat. Choose **Connect to an existing server** and enter `http://localhost:8110` on the tower machine, or `http://<TOWER_ADDR>:8110` on any other laptop.
+2. **Install the `detente` command** once. `pipx install detente` works too. Don't use `uvx` here: the gates run from wherever the command is installed, and `uvx` keeps it only in a cache.
 
-```bash
-uv tool install detente
-```
+   ```bash
+   uv tool install detente
+   ```
 
-Then, inside each checkout an agent works in, connect it. `--person` is your username in the chat app. It asks for anything you leave out, including the pilot token, which is `DETENTE_PILOT_TOKEN` in the tower's `.env`. The token is checked with the tower before anything is written.
+3. **Connect each checkout an agent works in.** It asks for anything you leave out, including the pilot token (`DETENTE_PILOT_TOKEN` in the tower's `.env`), and checks the token with the tower before it writes anything. On other laptops, `--url` is `http://<TOWER_ADDR>:8100`.
 
-```bash
-detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
-```
+   ```bash
+   detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
+   ```
 
-On any laptop other than the tower machine, `--url` is `http://<TOWER_ADDR>:8100`.
+4. **Keep the watcher running** while agents work, and run `detente doctor` whenever something seems off.
 
-Keep the watcher running while agents work, and check the setup whenever something seems off:
+   ```bash
+   detente watch
+   ```
 
-```bash
-detente watch
-```
+5. **Add your agent to the `tower` room** in Switch Console. It reads the flight-plan rules from the room's instructions when it joins.
 
-```bash
-detente doctor
-```
-
-In Switch Console, add your agent to the `tower` room. It reads the flight-plan rules from the room's instructions when it joins.
-
-`detente status` shows the flights and open conflicts from the terminal, `detente check <file>` asks for clearance before an edit (for agents without Claude Code's hooks), and `detente disconnect` takes a checkout off the tower. Every command is in the [CLI guide](cli/README.md).
+Every command, with its options, is in the [CLI guide](cli/README.md).
 
 ## Talk to Detente
 
@@ -190,23 +201,24 @@ They share the radar and conflict screens, and nothing else.
 | Data | Recorded runs | Your team's live data |
 | Server | None | Detente's API |
 
-`make test` fails if the real app imports showcase code, if anything the showcase uses calls a server, or if `backend/` or `pilot/` mention the showcase. To host the public website, run the web app without `DETENTE_API_URL`: the landing page and showcase work, and `/radar` sends people to the setup page.
+- **Kept apart by tests.** `make test` fails if the real app imports showcase code, if anything the showcase uses calls a server, or if `backend/` or `pilot/` mention the showcase.
+- **The public website** is the web app run without `DETENTE_API_URL`: the landing page and showcase work, and `/radar` sends people to the setup page.
 
 ## Benchmark
 
-`make bench` runs 32 scenarios on real git checkouts in a few seconds, offline. See [bench/results.md](bench/results.md).
+Three benchmarks, all offline, all from commands in this repo.
 
-Of the 20 scenarios that really break, `git merge-tree` stops three and file leases four. Detente stops 18 from the code and warns on two from the flight plans. Of the 12 that are fine, Detente stops none, and file leases stop six.
+| Run | What it does | Result |
+| --- | --- | --- |
+| `make bench` | 32 scenarios we wrote, on real git checkouts, in a few seconds. 20 really break. [Results](bench/results.md) | Detente stops 18 breaks from the code and warns on 2 from the flight plans. It stops none of the 12 that are fine. `git merge-tree` stops 3 breaks. File leases stop 4, and 6 of the fine ones too. |
+| `make bench-real REPOS="<clones>"` | Replays 194 merged PRs from cognee, ESP-Website and Django through the real squawk daemon: main's side on one checkout, the PR's on another. [Results](bench/real-merges.md) | git conflicted on 4 and Detente stopped all 4. Of the 190 that merged cleanly, Detente stopped none. |
+| `make bench-planted REPOS="<clones>"` | Plants breaks in Django, Flask, Requests, FastAPI and Rich. Laptop A changes a function another file really calls; laptop B adds a call copied from a real call site. A fixed seed picks the functions. [Results](bench/planted.md) | Detente stopped all 564 breaks, each with the exact reason, and none of the 274 harmless changes. `git merge-tree` flagged none of the breaks. |
 
-Those two warnings only exist if the agents declare the overlap honestly, and a warning stops nobody. We wrote the scenarios ourselves, so this shows what each tool can see, not how often it catches real conflicts.
+What they can't show:
 
-`make bench-real REPOS="<clones>"` measures false alarms on real code instead. It replays merged PRs from a project's history through the real squawk daemon, main's side on one checkout and the PR's on another. Both sides really shipped together. See [bench/real-merges.md](bench/real-merges.md).
-
-On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and Detente stopped all 4. Of the 190 that merged cleanly, Detente stopped none. This can't show catches git misses, because breaks like that rarely survive in a project's history; the scenarios and the planted breaks cover those.
-
-`make bench-planted REPOS="<clones>"` plants breaks in real projects. In each one, a fixed seed picks up to 10 functions that another file really calls, for each of three kinds of call. Laptop A changes the function and laptop B adds a new call copied from a real call site, so the two laptops never touch the same file. See [bench/planted.md](bench/planted.md).
-
-On Django, Flask, Requests, FastAPI and Rich, Detente stopped all 564 planted breaks (new required parameters, renames, deletions, functions made async and renamed keywords), each with the exact reason, and none of the 274 harmless changes. git merge-tree flagged none of the breaks. The breaks cover three kinds of call: 208 to functions imported from the module that defines them, 153 to functions imported through a package's `__init__` (`from flask import url_for`), and 203 to methods on an object whose type the code states. Methods on objects whose type Detente can't see aren't planted; see [Limits](#limits).
+- **The scenarios are ours.** They show what each tool can see, not how often it catches real conflicts. The 2 warnings need agents to declare the overlap honestly, and a warning stops nobody.
+- **Real merges can't show catches git misses.** Breaks like that rarely survive in a project's history; the scenarios and the planted breaks cover those.
+- **Planted breaks cover three kinds of call:** 208 to functions imported from where they're defined, 153 through a package's `__init__` (`from flask import url_for`), and 203 to methods on an object whose type the code states. The kinds of break are new required parameters, renames, deletions, functions made async and renamed keywords. Methods on objects whose type Detente can't see aren't planted; see [Limits](#limits).
 
 ## Limits
 
@@ -238,20 +250,16 @@ Tools near this space include MCP Agent Mail, Dibs and Interlock (file leases fo
 
 ## Develop
 
-```bash
-make test
-make bench
-make bench-real REPOS="~/code/some-python-project"
-make bench-planted REPOS="~/code/some-python-project"
-make dev
-make test-live
-make test-crash
-make record
-```
-
-`make test` runs offline. `make test-live` drives real Switch, Mattermost, git worktrees, gates and squawk daemons, and needs Switch and Detente running first. `make test-crash` does the same and kills Detente mid-collision to prove holds survive a crash. It needs `make api`, not the Docker stack. `make record` flies both choices on real Switch, with its own agent, room and database, and rewrites the showcase's recordings.
-
-With `make dev`, make your account with `uv run python -m backend.accounts add yourname`.
+| Command | What it does |
+| --- | --- |
+| `make test` | The tests, offline |
+| `make bench` | The 32 scenarios |
+| `make bench-real REPOS="~/code/some-python-project"` | Replays a project's merged PRs |
+| `make bench-planted REPOS="~/code/some-python-project"` | Plants breaks in a project |
+| `make dev` | The API and web app with reloading. Make your account with `uv run python -m backend.accounts add yourname` |
+| `make test-live` | Drives real Switch, Mattermost, git worktrees, gates and squawk daemons. Needs Switch and Detente running |
+| `make test-crash` | The same, and kills Detente mid-collision to prove holds survive a crash. Needs `make api`, not the Docker stack |
+| `make record` | Flies both choices on real Switch, with its own agent, room and database, and rewrites the showcase's recordings |
 
 ## License
 
