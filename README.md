@@ -177,7 +177,11 @@ Those two warnings only exist if the agents declare the overlap honestly, and a 
 
 `make bench-real REPOS="<clones>"` measures false alarms on real code instead. It replays merged PRs from a project's history through the real squawk daemon, main's side on one checkout and the PR's on another. Both sides really shipped together. See [bench/real-merges.md](bench/real-merges.md).
 
-On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and Detente stopped all 4. Of the 190 that merged cleanly, Detente stopped none. This can't show catches git misses, because breaks like that rarely survive in a project's history; the scenarios cover those.
+On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and Detente stopped all 4. Of the 190 that merged cleanly, Detente stopped none. This can't show catches git misses, because breaks like that rarely survive in a project's history; the scenarios and the planted breaks cover those.
+
+`make bench-planted REPOS="<clones>"` plants breaks in real projects. In each one, a fixed seed picks up to 10 functions that another file really calls, for each of three kinds of call. Laptop A changes the function and laptop B adds a new call copied from a real call site, so the two laptops never touch the same file. See [bench/planted.md](bench/planted.md).
+
+On Django, Flask, Requests, FastAPI and Rich, Detente stopped all 564 planted breaks (new required parameters, renames, deletions, functions made async and renamed keywords), each with the exact reason, and none of the 274 harmless changes. git merge-tree flagged none of the breaks. The breaks cover three kinds of call: 208 to functions imported from the module that defines them, 153 to functions imported through a package's `__init__` (`from flask import url_for`), and 203 to methods on an object whose type the code states. Methods on objects whose type Detente can't see aren't planted; see [Limits](#limits).
 
 ## Limits
 
@@ -206,6 +210,7 @@ Tools near this space include MCP Agent Mail, Dibs and Interlock (file leases fo
 make test
 make bench
 make bench-real REPOS="~/code/some-python-project"
+make bench-planted REPOS="~/code/some-python-project"
 make dev
 make test-live
 make test-crash

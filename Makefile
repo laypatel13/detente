@@ -6,7 +6,7 @@ export TOWER_ADDR
 SWITCH = docker compose -p detente-switch --env-file switch/.env -f switch/compose.yml $(if $(TOWER_ADDR),-f switch/share.yml) --profile collab --profile gateway
 DETENTE = docker compose -p detente $(if $(TOWER_ADDR),-f docker-compose.yml -f docker-compose.share.yml)
 
-.PHONY: install switch-up switch-down setup up down user api web dev test test-live test-crash record bench bench-real
+.PHONY: install switch-up switch-down setup up down user api web dev test test-live test-crash record bench bench-real bench-planted
 
 install:
 	uv sync
@@ -58,3 +58,6 @@ bench:
 
 bench-real:
 	uv run python -m bench.real_merges $(REPOS)
+
+bench-planted:
+	uv run python -m bench.planted $(REPOS)
