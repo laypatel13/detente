@@ -7,7 +7,7 @@ import pytest
 from rich.console import Console
 from typer.testing import CliRunner
 
-from cli import showcase
+from cli import render, showcase
 from cli.app import app
 from cli.tower import Refused, Tower, Unreachable
 
@@ -17,6 +17,9 @@ OPEN_CONFLICT = json.loads((RECORDINGS / "a.json").read_text())["frames"][7]["st
 CONNECT = ["--callsign", "lay-claude", "--person", "lay", "--vendor", "Claude Code", "--url", "http://localhost:8100"]
 
 runner = CliRunner()
+# Rich wraps at the terminal's width, which differs between machines and CI. Fix it, so a phrase
+# the tests look for never splits across two lines.
+render.out.width = render.err.width = 200
 
 
 def detente(*args: str):
