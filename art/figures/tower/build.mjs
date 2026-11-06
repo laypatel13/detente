@@ -1,4 +1,4 @@
-// Fig 1 for the README: the tower. An airfield model on a bench plate. Roger stands on the tower,
+// The tower picture for the README and the Docs page. An airfield model on a bench plate. Roger stands on the tower,
 // two agents' planes fly in toward the one runway (main), Detente holds both when their changes
 // collide, and they land in turn. Roger and the planes are voxels built from the site's own pixel
 // art in art/roger.json and art/plane.json.
@@ -11,6 +11,11 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { LOOP, STEPS, stateAt } from "./model.mjs";
+
+// The run's six moments, in order, matching STEPS in model.mjs. The corners name the one showing,
+// so a still of the figure reads as one step of a flow.
+const STEP_NAMES = ["In the air", "Collision", "You pick B", "lay-claude lands", "a-codex fixes", "Both landed"];
+const stepLabel = (index) => `Step ${index + 1} of ${STEP_NAMES.length}`;
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ART = join(HERE, "..", "..");
@@ -304,6 +309,9 @@ const rogerGroup = part("roger");
 const beaconLight = part("beacon").firstElementChild;
 const glow = part("glow");
 const readout = document.querySelector("[data-readout]");
+const STEP_NAMES = ${JSON.stringify(STEP_NAMES)};
+const stepCorner = document.querySelector('[data-corner="fig"]');
+const nameCorner = document.querySelector('[data-corner="title"]');
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 const HOLD_POSE = 5.6;
 let clock = still.matches ? HOLD_POSE : 0, touring = !still.matches, visible = false, frame = 0, last = 0, target = clock;
@@ -340,6 +348,11 @@ function draw() {
   scrub.setAttribute("aria-valuetext", s.readout);
   const here = stepAt(s.t);
   stepButtons.forEach((button, index) => button.toggleAttribute("aria-current", index === here));
+  if (stepCorner.dataset.step !== String(here)) {
+    stepCorner.dataset.step = String(here);
+    stepCorner.textContent = "Step " + (here + 1) + " of " + STEP_NAMES.length;
+    nameCorner.textContent = STEP_NAMES[here];
+  }
 }
 const showPlaying = () => {
   playButton.textContent = touring ? "Pause" : "Play";
@@ -423,7 +436,7 @@ const CSS = `
 .vx>.vt{fill:color-mix(in srgb,var(--c),#fff 16%);stroke:color-mix(in srgb,var(--c),#fff 16%)}
 .iso-solid.is-hold>.iso-top,.iso-solid.is-hold>.iso-shade,.iso-solid.is-hold>.iso-fill{fill:#ff2b3f}
 .iso-solid.is-hold>.iso-edge{stroke:#ff8f8f}
-.is-still body{background:transparent}.is-still .iso-page{margin:0;width:820px}.is-still .iso-legend,.is-still [data-corner="hint"]{display:none}
+.is-still body{background:transparent}.is-still .iso-plate{box-shadow:none}.is-still .iso-page{margin:0;width:820px}.is-still .iso-legend,.is-still [data-corner="hint"]{display:none}
 .iso{--anatomy-mono:"Geist Mono",ui-monospace,Menlo,monospace}
 .iso-stage{cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .iso-stage.is-dragging{cursor:grabbing}
@@ -450,8 +463,6 @@ const CSS = `
 .is-still .tw-controls{display:none}
 `;
 
-// The run's six moments, in order, matching STEPS in model.mjs.
-const STEP_NAMES = ["In the air", "Collision", "You pick B", "lay-claude lands", "a-codex fixes", "Both landed"];
 function controls() {
   const steps = STEP_NAMES.map((name, index) => `<li><button type="button" data-step="${index}"><span>${index + 1}</span>${name}</button></li>`).join("");
   return `<div class="tw-controls">
@@ -461,8 +472,8 @@ function controls() {
 }
 
 const body = k.plateHtml({
-  fig: "Fig 1",
-  title: "The tower",
+  fig: stepLabel(0),
+  title: STEP_NAMES[0],
   hint: "Tap for the next step, drag to scrub",
   readout: first.readout,
   keys: [
