@@ -111,11 +111,11 @@ export function Roger({
   );
 }
 
-// Roger's head on a yellow sign with a black edge, like the app icon, so it reads on any ground.
+// Roger's head with a little room around it, straight on whatever ground he's on.
 export function RogerBadge({ mood, scale }: { mood: Mood; scale: number }) {
   return (
     <span
-      className="inline-flex shrink-0 rounded-[var(--radius)] border-2 border-tarmac bg-runway"
+      className="inline-flex shrink-0"
       style={{ padding: scale * 2 }}
     >
       <Roger mood={mood} scale={scale} head />
