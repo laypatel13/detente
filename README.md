@@ -61,6 +61,17 @@ make user NAME=yourname
 
 `make switch-up` runs Switch 0.31.0 with its bundled Mattermost and writes the logins to `switch/.env`. Switch runs on 8110 and 3110 instead of its usual 8000 and 3000, so it can sit next to other projects. To use a Switch server you already have, skip that step and run `uv run python -m backend.setup --url <agent API URL> --registration-token <token>`.
 
+### Let the team's laptops in
+
+Every address above answers on this machine only. When agents work on other laptops, add this machine's IP address on your team's private network, such as its [Tailscale](https://tailscale.com) address, to `.env` and restart:
+
+```bash
+echo "TOWER_ADDR=100.101.102.103" >> .env
+make switch-up up
+```
+
+The radar, the chat, Switch and Detente's API then answer at that address too, on the same ports. Teammates use it in place of `localhost`. Switch's database stays on this machine.
+
 ## Sign in
 
 Nobody can sign up through the website. Accounts are made on the server, and `make user NAME=yourname` asks for a password of at least 12 characters. Run it once for each teammate.
@@ -89,6 +100,8 @@ Then, inside each checkout an agent works in, connect it. `--person` is your use
 ```bash
 detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
 ```
+
+On any laptop other than the tower machine, `--url` is `http://<TOWER_ADDR>:8100`.
 
 Keep the watcher running while agents work, and check the setup whenever something seems off:
 
@@ -171,7 +184,7 @@ On 194 such merges from cognee, ESP-Website and Django, git conflicted on 4 and 
 - **Gates fail closed.** If Detente is unreachable, edits and commits are refused.
 - **One repo, one tower room.** Multi-repo support isn't built.
 - **One pilot token per install.** Every laptop shares it, so anyone holding it can report as any callsign. Keep port 8100 on a private network.
-- **Use HTTPS off your own machine.** Detente doesn't serve HTTPS itself. Behind a proxy that sets `X-Forwarded-Proto`, the sign-in cookie is marked secure.
+- **Share it over Tailscale or HTTPS.** `TOWER_ADDR` serves plain HTTP, so passwords and the pilot token cross the network as they are. Tailscale encrypts that traffic. Detente doesn't serve HTTPS itself; behind a proxy that sets `X-Forwarded-Proto`, the sign-in cookie is marked secure.
 - **People get Switch's owner-only default.** `@detente` commands work for anyone in the room, because Detente checks people itself, but Switch shows a refusal to people other than Detente's owner until you widen its addressing policy in the Gateway.
 
 ## Prior art

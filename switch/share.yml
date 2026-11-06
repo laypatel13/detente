@@ -1,0 +1,17 @@
+# Also answer on TOWER_ADDR, so teammates reach the chat and their agents reach Switch from their
+# own laptops. The database stays on this machine. `make switch-up` adds this file when TOWER_ADDR
+# is set in the project's .env.
+services:
+  switch:
+    ports:
+      - "${TOWER_ADDR:?set TOWER_ADDR in .env}:${API_HOST_PORT:-8000}:8000"
+  gateway:
+    ports:
+      - "${TOWER_ADDR:?set TOWER_ADDR in .env}:${GATEWAY_HOST_PORT:-3000}:3000"
+  mattermost:
+    ports:
+      - "${TOWER_ADDR:?set TOWER_ADDR in .env}:${MATTERMOST_HOST_PORT:-8065}:8065"
+    environment:
+      # The chat only keeps its live connection open for pages it trusts, which is localhost
+      # alone by default. This adds the shared address, so messages appear without a reload.
+      MM_SERVICESETTINGS_ALLOWCORSFROM: http://${TOWER_ADDR}:${MATTERMOST_HOST_PORT:-8065}

@@ -1,4 +1,10 @@
-SWITCH = docker compose -p detente-switch --env-file switch/.env -f switch/compose.yml --profile collab --profile gateway
+# This machine's IP address on your team's private network, read from .env. When it's set, the
+# tower answers there as well as on this machine, so teammates' laptops can reach it.
+TOWER_ADDR := $(shell grep -s '^TOWER_ADDR=' .env | tail -n 1 | cut -d= -f2)
+export TOWER_ADDR
+
+SWITCH = docker compose -p detente-switch --env-file switch/.env -f switch/compose.yml $(if $(TOWER_ADDR),-f switch/share.yml) --profile collab --profile gateway
+DETENTE = docker compose -p detente $(if $(TOWER_ADDR),-f docker-compose.yml -f docker-compose.share.yml)
 
 .PHONY: install switch-up switch-down setup up down user api web dev test test-live test-crash record bench bench-real
 
@@ -18,10 +24,10 @@ setup:
 	uv run python -m backend.setup --registration-token "$$(grep ^AGENT_REGISTRATION_TOKEN= switch/.env | cut -d= -f2)"
 
 up:
-	docker compose -p detente up -d --build
+	$(DETENTE) up -d --build
 
 down:
-	docker compose -p detente down
+	$(DETENTE) down
 
 user:
 	docker compose -p detente exec api .venv/bin/python -m backend.accounts add $(NAME)

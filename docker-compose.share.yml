@@ -1,0 +1,10 @@
+# Also answer on TOWER_ADDR, this machine's IP address on your team's private network, so
+# teammates' laptops can reach the API and the radar. `make up` adds this file when TOWER_ADDR is
+# set in .env; without it, everything answers on this machine only.
+services:
+  api:
+    ports:
+      - "${TOWER_ADDR:?set TOWER_ADDR in .env}:8100:8100"
+  web:
+    ports:
+      - "${TOWER_ADDR:?set TOWER_ADDR in .env}:3100:3100"

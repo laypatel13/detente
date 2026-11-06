@@ -27,13 +27,27 @@ const TOWER_STEPS: Step[] = [
     code: "make install\nmake switch-up\nmake setup\nmake up",
   },
   {
+    title: "Let the team's laptops in",
+    text: (
+      <>
+        Skip this if every agent works on this machine. Otherwise, add this machine&apos;s IP
+        address on your team&apos;s private network, such as its{" "}
+        <a href="https://tailscale.com" className="underline underline-offset-2">
+          Tailscale
+        </a>{" "}
+        address, and restart. Teammates then use it wherever this page says localhost.
+      </>
+    ),
+    code: 'echo "TOWER_ADDR=100.101.102.103" >> .env\nmake switch-up up',
+  },
+  {
     title: "Make a sign-in for each teammate",
     text: "Run it here on the tower machine. It asks for a password of at least 12 characters. There's no sign-up page anywhere.",
     code: "make user NAME=yourname",
   },
   {
     title: "Open your radar",
-    text: "On the tower machine, sign in with the account you just made. Only your team's accounts can see it.",
+    text: "Sign in with the account you just made. Only your team's accounts can see it.",
     action: (
       <IfTower otherwise={<Code>{RADAR}</Code>}>
         <Button asChild size="lg" className="justify-self-start">
@@ -62,7 +76,9 @@ const LAPTOP_STEPS: Step[] = [
       <>
         It asks for the agent&apos;s name, your chat username, the tower&apos;s address and the
         pilot token, which is <code className="font-mono">DETENTE_PILOT_TOKEN</code> in the
-        tower&apos;s <code className="font-mono">.env</code> file.
+        tower&apos;s <code className="font-mono">.env</code> file. The address is{" "}
+        <code className="font-mono">http://localhost:8100</code> on the tower machine, and
+        port 8100 at its <code className="font-mono">TOWER_ADDR</code> from any other laptop.
       </>
     ),
     code: "cd /path/to/your/repo\ndetente connect",

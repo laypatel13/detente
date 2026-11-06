@@ -59,6 +59,8 @@ anything:
 detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
 ```
 
+`--url` is `http://localhost:8100` on the tower machine. From any other laptop it's port 8100 at the tower's
+`TOWER_ADDR`, once the tower [lets the team's laptops in](https://github.com/laypatel13/detente#let-the-teams-laptops-in).
 `--callsign` is the agent's name in Switch and `--person` is your username in the chat app. The pilot token is
 `DETENTE_PILOT_TOKEN` in the tower's `.env`. It's asked for rather than typed on the command line, so it stays out
 of your shell history (or set `DETENTE_TOKEN`).
