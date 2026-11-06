@@ -7,6 +7,7 @@ export type NavLink = { href: string; label: string };
 export const PUBLIC_LINKS: NavLink[] = [
   { href: "/showcase", label: "Showcase" },
   { href: "/get-started", label: "Set up" },
+  { href: "/docs", label: "Docs" },
 ];
 
 type SiteHeaderProps = { links: NavLink[]; note?: ReactNode; children?: ReactNode };
