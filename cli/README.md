@@ -15,6 +15,22 @@
 
 ---
 
+## At a glance
+
+| Command | What it does |
+|---|---|
+| [`detente showcase`](#detente-showcase) | Plays a real recorded run. No tower, no setup. |
+| [`detente connect`](#detente-connect) | Connects this checkout to your team's tower. |
+| [`detente watch`](#detente-watch) | Tells the tower what this checkout's unpushed work changes and calls. |
+| [`detente doctor`](#detente-doctor) | Checks git, both gates, the token and the tower. |
+| [`detente status`](#detente-status) | Flights in the air, open conflicts and the latest messages. |
+| [`detente conflict`](#detente-conflict) | One conflict in full, with the fixes on offer. |
+| [`detente check <file>`](#detente-check) | Is this checkout cleared to edit these files? |
+| [`detente disconnect`](#detente-disconnect) | Takes this checkout off the tower. |
+| [`detente`](#detente) | Roger, where you are, and the commands you'll use most. |
+
+The CLI never picks a fix. People decide in chat: [what to say](#decisions-happen-in-chat).
+
 ## Install
 
 You need Python 3.12 or newer.
@@ -87,43 +103,124 @@ detente doctor
   <img src="https://raw.githubusercontent.com/laypatel13/detente/main/cli/images/cli-help.png" width="680" alt="detente --help: the commands grouped as Start, The tower and Showcase">
 </p>
 
-#### Start
+### `detente`
 
-| Command | What it does |
+Roger, where you are, and the commands you'll use most. Outside a git checkout it points you to the showcase.
+
+```sh
+detente
+```
+
+### `detente connect`
+
+Connects the checkout you're in to your team's tower. It installs the commit gate and Claude Code's edit gate,
+and saves the callsign and the pilot token. It asks for anything you leave out, and checks the token with the
+tower before it writes anything.
+
+```sh
+detente connect --callsign lay-claude --person lay --vendor "Claude Code" --url http://localhost:8100
+```
+
+| Option | What it sets |
 |---|---|
-| `detente` | Roger, where you are, and the commands you'll use most. |
-| `detente connect` | Connects the checkout you're in to your team's tower: the commit gate, Claude Code's edit gate, the callsign and the pilot token. |
-| `detente watch` | Tells the tower what this checkout's unpushed work changes and calls. While there's unpushed work it also fetches main every 10 seconds, so a teammate's push that breaks it collides too. Ctrl+C stops it. |
-| `detente doctor` | Checks git, the config, both gates (and that they still point at a Python that exists), and that the tower answers and takes the token. |
-| `detente disconnect` | Removes this checkout's gates and config. Anyone else's hooks, your code and your commits stay as they are. |
+| `--callsign` | The agent's name in Switch, such as `lay-claude` |
+| `--person` | Your username in the chat app, such as `lay` |
+| `--vendor` | The agent tool: `"Claude Code"`, `"Codex"`, `"OpenCode"`… |
+| `--url` | The tower's address, such as `http://localhost:8100` |
+| `--token` | The pilot token. Leave it out to be asked, so it stays out of your shell history, or set `DETENTE_TOKEN` |
 
-#### The tower
+### `detente watch`
 
-| Command | What it does |
+Tells the tower what this checkout's unpushed work changes and calls. While there's unpushed work it also fetches
+main every 10 seconds, so a teammate's push that breaks it collides too. Leave it running; Ctrl+C stops it.
+
+```sh
+detente watch
+```
+
+### `detente doctor`
+
+Checks git, the config, both gates (and that they still point at a Python that exists), and that the tower answers
+and takes the token. Exits `3` if anything is wrong.
+
+```sh
+detente doctor
+```
+
+### `detente status`
+
+Flights in the air, open conflicts and the latest messages.
+
+```sh
+detente status -n 10
+```
+
+| Option | What it does |
 |---|---|
-| `detente status` | Flights in the air, open conflicts and the latest messages. `-n 10` shows more messages. |
-| `detente conflict [name]` | One conflict in full: what changed, what it breaks, the fixes on offer and who picked. Leave the name out for the open one. |
-| `detente check <file>…` | Is this checkout cleared to edit these files? Exits 1 if any isn't. For agents that don't run Claude Code's hooks, and for scripts. |
+| `--messages`, `-n` | How many recent messages to show (default 5) |
+
+### `detente conflict`
+
+One conflict in full: what changed, what it breaks, the fixes on offer and who picked. Leave the name out for the
+open one.
+
+```sh
+detente conflict conflict-create-session-3f1a
+```
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/laypatel13/detente/main/cli/images/cli-conflict.png" width="680" alt="detente conflict: total_due gained a required currency argument on main, statement.py:5 still calls it the old way, and the two fixes on offer">
 </p>
 
-#### Showcase
+### `detente check`
 
-| Command | What it does |
-|---|---|
-| `detente showcase` | The recorded run. `--fast` plays it without pauses. |
+Is this checkout cleared to edit these files? Exits `1` if any isn't. For agents that don't run Claude Code's hooks,
+and for scripts: ask before editing.
 
-#### Options
+```sh
+detente check billing/refunds.py
+```
+
+### `detente disconnect`
+
+Removes this checkout's gates and config. Anyone else's hooks, your code and your commits stay as they are.
+
+```sh
+detente disconnect --yes
+```
 
 | Option | What it does |
 |---|---|
-| `--repo PATH`, `-r PATH` | Use another checkout than the one you're in. |
-| `--json` | The raw result as JSON, for scripts (`doctor`, `status`, `conflict`, `check`). |
+| `--yes`, `-y` | Don't ask first |
 
-Exit codes: `0` all fine, `1` a finding (`check` refused a file), `2` a usage problem, `3` the setup or the tower
-(`doctor` found a problem, or the tower didn't answer).
+### `detente showcase`
+
+The recorded run. No tower, and it never touches your checkouts.
+
+```sh
+detente showcase --fast
+```
+
+| Option | What it does |
+|---|---|
+| `--fast` | Plays it without pauses |
+
+### Options every command shares
+
+| Option | Works with | What it does |
+|---|---|---|
+| `--repo PATH`, `-r PATH` | every command that uses a checkout | Use another checkout than the one you're in |
+| `--json` | `doctor`, `status`, `conflict`, `check` | Print the raw result as JSON, for scripts |
+| `--help` | every command | Show the command's options |
+
+### Exit codes
+
+| Code | Means |
+|---|---|
+| `0` | All fine |
+| `1` | A finding: `check` refused a file |
+| `2` | A usage problem |
+| `3` | The setup or the tower: `doctor` found a problem, or the tower didn't answer |
 
 ## Decisions happen in chat
 
