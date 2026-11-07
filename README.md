@@ -310,8 +310,26 @@ Tools near this space include MCP Agent Mail, Dibs and Interlock (file leases fo
 
 ## How this was built
 
-Built by Lay ([laypatel13](https://github.com/laypatel13)) during Flip the Switch, from the first commit on November 4, with Claude Code as a coding assistant. Every number in this README comes from a command in this repo, so you can rerun it instead of taking it on trust.
+Built solo by Lay ([laypatel13](https://github.com/laypatel13)) during [Flip the Switch](https://www.wemakedevs.org/hackathons/switch), November 4 to 7, 2026. The first commit is from November 4, and the whole history is here.
+
+- **AI assistance.** Claude Code helped write the code, tests and docs. I made the design calls and committed every change myself. Detente itself calls no LLM: detection is Python's standard `ast` module, so every catch names the exact signature and the exact call.
+- **Check every number.** Each figure in this README comes from a command in this repo: `make test`, `make bench-planted` and `make bench-real`. The results are in [bench/](bench/).
+- **Original art.** Roger the tower and the pixel planes were drawn for this project. Their source is in [art/](art/).
+
+## Thanks
+
+- The [Switch](https://github.com/sandbox-quantum/switch) team, for the rooms, the agent protocol and Console that Detente stands on.
+- [WeMakeDevs](https://www.wemakedevs.org), for running Flip the Switch.
+- Django, Flask, Requests, FastAPI, Rich, NumPy, Matplotlib, pytest, pip and IPython, whose real code and pull requests make up the benchmark.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+<p align="center">
+  <img src="art/roger-avatar-256.png" height="96" alt="Roger, Detente's control tower">
+  <br>
+  <b>Detente</b>: traffic control for coding agents.
+  <br>
+  <a href="https://www.youtube.com/watch?v=obMUDCzWLgg">Demo video</a> | <a href="https://dev.to/laypatel13/two-coding-agents-broke-each-others-code-on-different-laptops-so-i-built-them-a-control-tower-on-3ne1">Blog post</a> | <a href="https://mydetente.vercel.app/showcase">Showcase</a> | <a href="https://pypi.org/project/detente/">PyPI</a>
+</p>
