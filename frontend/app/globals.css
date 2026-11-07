@@ -199,12 +199,13 @@
   animation: taxi-lights 1.4s steps(7) infinite;
 }
 
-.taxi-lights[data-paused="true"] {
-  animation-play-state: paused;
-}
-
 .alarm {
   animation: alert 1s steps(2, jump-none) infinite;
+}
+
+[data-paused="true"] .taxi-lights,
+[data-paused="true"] .alarm {
+  animation-play-state: paused;
 }
 
 .shaken[data-mood="collision"] .scope-room > * {

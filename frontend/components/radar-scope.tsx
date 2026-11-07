@@ -123,9 +123,18 @@ function ParkedPlane({ stand, fit, scale, plate }: ParkedPlaneProps) {
   );
 }
 
-export function RadarScope({ state }: { state: RadarState | null }) {
+type RadarScopeProps = {
+  state: RadarState | null;
+  // A parent that runs its own loop, like the landing hero, owns the pause so it can stop the loop too.
+  paused?: boolean;
+  onPausedChange?: (paused: boolean) => void;
+};
+
+export function RadarScope({ state, paused: pausedByParent, onPausedChange }: RadarScopeProps) {
   const { ref, width } = useWidth();
-  const [paused, setPaused] = useState(false);
+  const [pausedHere, setPausedHere] = useState(false);
+  const paused = pausedByParent ?? pausedHere;
+  const setPaused = onPausedChange ?? setPausedHere;
 
   const { ringRadius, aprons, stands, routes } = layoutField(
     state?.flights ?? [],
@@ -160,7 +169,12 @@ export function RadarScope({ state }: { state: RadarState | null }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div data-ui ref={ref} className="relative aspect-square w-full overflow-hidden">
+      <div
+        data-ui
+        ref={ref}
+        data-paused={paused}
+        className="relative aspect-square w-full overflow-hidden"
+      >
         <svg
           viewBox={`0 0 ${VIEW} ${VIEW}`}
           className="absolute inset-0 size-full"
@@ -193,7 +207,6 @@ export function RadarScope({ state }: { state: RadarState | null }) {
                 key={apron.name}
                 d={taxiway(apron)}
                 className={apron.alert === "hold" ? undefined : "taxi-lights"}
-                data-paused={paused}
               />
             ))}
             <circle cx={CENTER} cy={CENTER} r={ringRadius} />
@@ -306,8 +319,8 @@ export function RadarScope({ state }: { state: RadarState | null }) {
           variant="ghost"
           size="icon"
           className="absolute right-0 bottom-0 text-dim"
-          aria-label={paused ? "Resume the taxiway lights" : "Pause the taxiway lights"}
-          title={paused ? "Resume the taxiway lights" : "Pause the taxiway lights"}
+          aria-label={paused ? "Play the radar" : "Pause the radar"}
+          title={paused ? "Play the radar" : "Pause the radar"}
           onClick={() => setPaused(!paused)}
         >
           {paused ? <Play aria-hidden /> : <Pause aria-hidden />}
