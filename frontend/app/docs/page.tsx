@@ -653,9 +653,9 @@ export default function DocsPage() {
                 <p className="rise-2 max-w-[30ch] text-[clamp(1.5rem,2.2vw,1.875rem)] leading-[1.3] font-medium">
                   One computer runs the
                   <PictureWord
-                    src="/photos/sfo-control-tower-at-night.jpg"
+                    src="/photos/lga-control-tower-at-sunset.jpg"
                     alt=""
-                    position="50% 22%"
+                    position="50% 14%"
                   />
                   tower. Each laptop gets the
                   <PictureWord src="/cli/home.png" alt="" position="4% 40%" />
@@ -1109,12 +1109,12 @@ export default function DocsPage() {
               </a>
               , CC0;{" "}
               <a
-                href="https://commons.wikimedia.org/wiki/File:SFO_Control_tower,_night._(28125162268).jpg"
+                href="https://commons.wikimedia.org/wiki/File:LGA_CT_sunset.JPG"
                 className="underline underline-offset-2"
               >
-                SFO Control tower, night
+                LGA CT sunset
               </a>{" "}
-              by mliu92, CC BY-SA 2.0;{" "}
+              by Dhaluza, CC BY-SA 3.0;{" "}
               <a
                 href="https://commons.wikimedia.org/wiki/File:Flight_control_strip_at_Jakarta_control.jpg"
                 className="underline underline-offset-2"

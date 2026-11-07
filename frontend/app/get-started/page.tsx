@@ -236,15 +236,15 @@ export default function GetStartedPage() {
         >
           <figure className="rise-3 m-0 grid content-start gap-3 lg:sticky lg:top-8 lg:col-span-5 lg:self-start">
             <Image
-              src="/photos/sfo-control-tower-at-night.jpg"
-              alt="San Francisco airport's control tower at night, its glass core lit blue above the terminal"
+              src="/photos/lga-control-tower-at-sunset.jpg"
+              alt="LaGuardia airport's control tower at sunset, its glass cab on top of a round tower above the terminal"
               width={1920}
-              height={2560}
+              height={2880}
               sizes="(min-width: 1024px) 40vw, 100vw"
               className="aspect-[4/5] h-auto w-full object-cover object-top"
             />
             <figcaption className="text-[15px]">
-              The control tower at San Francisco airport. Yours is one computer that stays on.
+              The control tower at LaGuardia airport in New York. Yours is one computer that stays on.
             </figcaption>
           </figure>
           <div className="grid grid-cols-1 content-start gap-10 lg:col-span-7">
@@ -354,12 +354,12 @@ export default function GetStartedPage() {
       <footer className="bg-panel px-4 pb-8 text-sm leading-relaxed text-dim sm:px-6 lg:px-8">
         Picture:{" "}
         <a
-          href="https://commons.wikimedia.org/wiki/File:SFO_Control_tower,_night._(28125162268).jpg"
+          href="https://commons.wikimedia.org/wiki/File:LGA_CT_sunset.JPG"
           className="underline underline-offset-2"
         >
-          SFO Control tower, night
+          LGA CT sunset
         </a>{" "}
-        by mliu92, CC BY-SA 2.0, via Wikimedia Commons.
+        by Dhaluza, CC BY-SA 3.0, via Wikimedia Commons.
       </footer>
     </div>
   );

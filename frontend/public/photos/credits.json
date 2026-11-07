@@ -88,5 +88,29 @@
       "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
     ],
     "saved": "2026-11-05T16:16:21.450Z"
+  },
+  {
+    "file": "frontend/public/photos/lga-control-tower-at-sunset.jpg",
+    "media": "image",
+    "ref": "openverse:671622ad-0091-4e0e-abe6-f72cc120032b",
+    "title": "LGA CT sunset",
+    "creator": "Dhaluza",
+    "creatorUrl": "https://commons.wikimedia.org/wiki/User:Dhaluza",
+    "date": null,
+    "license": "CC BY-SA 3.0",
+    "licenseCode": "by-sa",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "creditRequired": true,
+    "page": "https://commons.wikimedia.org/w/index.php?curid=28283751",
+    "via": "Wikimedia Commons",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/LGA_CT_sunset.JPG/1920px-LGA_CT_sunset.JPG",
+    "width": 1920,
+    "height": 2880,
+    "bytes": 540759,
+    "credit": "\"LGA CT sunset\" by Dhaluza, CC BY-SA 3.0, via Wikimedia Commons",
+    "notes": [
+      "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+    ],
+    "saved": "2026-11-07T17:28:46.421Z"
   }
 ]
