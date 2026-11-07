@@ -70,9 +70,9 @@ async def state(http: httpx.AsyncClient) -> dict:
     return (await http.get("/radar/state")).json()
 
 
-async def feed_has(http: httpx.AsyncClient, tag: str, text: str = "") -> bool:
+async def feed_has(http: httpx.AsyncClient, tag: str, *texts: str) -> bool:
     return any(
-        item["id"] > START[0] and item["tag"] == tag and text in item["text"]
+        item["id"] > START[0] and item["tag"] == tag and all(text in item["text"] for text in texts)
         for item in (await state(http))["feed"]
     )
 
@@ -125,8 +125,9 @@ async def main() -> None:
             "FLIGHT PLAN\ntask: refunds\nedit: billing/refunds.py\n"
             "uses: auth.session.create_session"
         )
-        await wait_for(lambda: feed_has(http, "TRAFFIC", developer_name), "TRAFFIC")
-        step("second plan raised TRAFFIC before any code existed")
+        # A related plan is still cleared; the traffic rides inside the clearance.
+        await wait_for(lambda: feed_has(http, "CLEARED", developer_name, "Traffic:"), "CLEARED with traffic")
+        step("second plan was cleared with a traffic note before any code existed")
 
         lay_checkout.write("auth/session.py", NEW_SIGNATURE)
         developer_checkout.write("billing/refunds.py", BROKEN_CALLER)

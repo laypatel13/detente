@@ -169,7 +169,7 @@ async def fly(choice: str) -> tuple[list[dict], dict[str, str]]:
             "FLIGHT PLAN\ntask: refunds\nedit: billing/refunds.py\n"
             "uses: auth.session.create_session"
         )
-        await wait_for(lambda: said("TRAFFIC", developer_name), "traffic")
+        await wait_for(lambda: said("CLEARED", developer_name), "the clearance with traffic")
         await asyncio.sleep(1.5)
 
         totals = third_path / "cart" / "totals.py"
