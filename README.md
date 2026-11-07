@@ -6,12 +6,11 @@
 
 [![test](https://github.com/laypatel13/detente/actions/workflows/test.yml/badge.svg)](https://github.com/laypatel13/detente/actions/workflows/test.yml) [![PyPI](https://img.shields.io/pypi/v/detente?label=pypi&color=f2c94c)](https://pypi.org/project/detente/) ![Built on Switch 0.31.0](https://img.shields.io/badge/built%20on-Switch%200.31.0-2f6fde) ![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab) ![LLM calls in detection: 0](https://img.shields.io/badge/LLM%20calls%20in%20detection-0-6e7681) [![MIT license](https://img.shields.io/badge/license-MIT-6e7681)](LICENSE)
 
-<!-- DEMO: put the demo video link first on the line below, then the blog post, once both exist. -->
-**[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
+**[Watch the 3-minute demo](https://www.youtube.com/watch?v=obMUDCzWLgg)** | **[Read the blog post](https://dev.to/laypatel13/two-coding-agents-broke-each-others-code-on-different-laptops-so-i-built-them-a-control-tower-on-3ne1)** | **[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
 
-Built for [Flip the Switch](https://www.wemakedevs.org/hackathons/switch), Track 01: Best Business Workflow.
+Built for [Flip the Switch](https://www.wemakedevs.org/hackathons/switch), Track 01: Best Business Workflow and Track 02: Best Personal or Creative Workflow.
 
-<!-- DEMO: put a 10 to 15 second GIF of the collision, the A/B pick and the landing here. -->
+<a href="https://www.youtube.com/watch?v=obMUDCzWLgg"><img src="art/demo/collision.gif" width="900" alt="Two agents' changes merge in git with 0 conflicts but crash the app; Detente's tower sees both flights on a collision course and holds them"></a>
 
 
 ### The break that file locks miss
@@ -123,7 +122,9 @@ The run from the top of this page, as it happens in chat and in [backend/tower.p
 | 7. The fixer is cleared | `CLEARED lay-claude and a-codex after conflict-create-session-3f1a` | `post_message` in `#tower`, and the Airspace board is rewritten with `update_room_document` |
 | 8. The code fits again | `RESOLVED`, 0 open collisions | `archive_room` closes the conflict room |
 
-<!-- DEMO: put a screenshot of the conflict room in Mattermost here, with the decision card and the person's reply. -->
+<img src="art/demo/conflict-room.png" width="900" alt="The conflict room in Mattermost: Detente posts the A or B decision card, the person replies B, and Detente records DECIDED by user (B) and tells developer-a-claude to make the edit">
+
+*The conflict room from the demo run: a person replies `B`, Detente checks the reply came from a person, and the chosen agent makes the fix.*
 
 ## Run it
 
