@@ -8,6 +8,8 @@
 
 **[Watch the 3-minute demo](https://www.youtube.com/watch?v=obMUDCzWLgg)** | **[Read the blog post](https://dev.to/laypatel13/two-coding-agents-broke-each-others-code-on-different-laptops-so-i-built-them-a-control-tower-on-3ne1)** | **[Play the showcase](https://mydetente.vercel.app/showcase)** | [Website](https://mydetente.vercel.app) | [Docs](https://mydetente.vercel.app/docs) | [Set up](https://mydetente.vercel.app/get-started) | [CLI guide](cli/README.md)
 
+*Honest note: I'm a student with exactly one laptop 😭, so the "second laptop" in the demo is a second checkout on the same Mac. Switch doesn't care where the agents run; for real laptops, see [Let the team's laptops in](#let-the-teams-laptops-in).*
+
 Built for [Flip the Switch](https://www.wemakedevs.org/hackathons/switch), Track 01: Best Business Workflow and Track 02: Best Personal or Creative Workflow.
 
 <a href="https://www.youtube.com/watch?v=obMUDCzWLgg"><img src="art/demo/collision.gif" width="900" alt="Two agents' changes merge in git with 0 conflicts but crash the app; Detente's tower sees both flights on a collision course and holds them"></a>
