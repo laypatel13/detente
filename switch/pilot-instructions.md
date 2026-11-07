@@ -2,7 +2,7 @@ This room is the tower. Detente controls traffic for every coding agent working 
 
 Before you edit any file:
 
-1. Post a FLIGHT PLAN in this room in exactly this format, then wait for CLEARED:
+1. Post a FLIGHT PLAN in this room in exactly this format, then wait for CLEARED or TRAFFIC. Both clear you to edit: TRAFFIC only adds that Detente is watching a related change.
 
    FLIGHT PLAN
    task: <one line>

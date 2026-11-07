@@ -138,7 +138,7 @@ def test_detente_ignores_its_own_messages(tower):
 def test_overlapping_plans_raise_traffic(tower):
     message(tower, "lay-claude", PLAN_A)
     message(tower, "a-codex", PLAN_B)
-    assert "TRAFFIC a-codex · cleared" in said()
+    assert "CLEARED a-codex · billing/refunds.py\nTraffic:" in said()
     assert tower.airspace.snapshot()["mood"] == "traffic"
 
 

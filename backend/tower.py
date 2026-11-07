@@ -172,11 +172,12 @@ class Tower:
             )
         elif traffic:
             reasons = "\n".join(f"{item.reason}. Watching." for item in traffic)
+            # Agents read anything but CLEARED as a hold, so the heads-up rides inside the clearance.
             await self._say(
                 self.room,
                 TOWER_ROOM,
-                "TRAFFIC",
-                f"{callsign} · cleared {files}\n{reasons}",
+                "CLEARED",
+                f"{callsign} · {files}\nTraffic: {reasons}",
                 to=(callsign,),
             )
         else:

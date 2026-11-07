@@ -29,6 +29,15 @@ def test_parse_plan_reads_every_field():
     )
 
 
+def test_parse_plan_reads_paths_and_calls_written_with_notes():
+    plan = parse_plan(
+        "FLIGHT PLAN\ntask: sign-up\nedit: auth/signup.py (new file)\n"
+        "changes: new module only\nuses: secrets.token_hex, auth.passwords.hash_password(password, salt)"
+    )
+    assert plan.edit == ("auth/signup.py",)
+    assert plan.uses == ("secrets.token_hex", "auth.passwords.hash_password")
+
+
 def test_parse_plan_ignores_other_messages():
     assert parse_plan("what's the plan for today?") is None
 
