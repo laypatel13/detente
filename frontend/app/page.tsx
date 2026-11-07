@@ -214,8 +214,9 @@ export default function Home() {
             <p className="rise-2 max-w-[72ch] text-lg leading-relaxed font-medium lg:text-xl">
               {SCENARIOS.length} scenarios on real git checkouts, offline, with{" "}
               <code className="font-mono text-base">make bench</code>. Detente stops{" "}
-              {count(BREAKS, 2, "stop")} and warns on {count(BREAKS, 2, "heads-up")}, and stops{" "}
-              {count(SAFE, 2, "stop")} of the {SAFE.length} that are fine. We wrote the scenarios
+              {count(BREAKS, 2, "stop")} and warns on {count(BREAKS, 2, "heads-up")}. Of the{" "}
+              {SAFE.length} that are fine, it stops {count(SAFE, 2, "stop")} and warns on{" "}
+              {count(SAFE, 2, "heads-up")}, and a warning holds nobody up. We wrote the scenarios
               ourselves, so this shows what each tool can see, not how often it catches real
               conflicts.
             </p>
